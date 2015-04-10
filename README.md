@@ -10,7 +10,7 @@ You can cite this library as:
 
 **Mian Lu, Bingsheng He, and Qiong Luo. Supporting extended precision on graphics processors. In Proceedings of the Sixth International Workshop on Data Management on New Hardware (DaMoN), 2010**
 
-'''
+```
 BibTex:
 @inproceedings{Lu:2010:SEP:1869389.1869392,
  author = {Lu, Mian and He, Bingsheng and Luo, Qiong},
@@ -28,10 +28,10 @@ BibTex:
  publisher = {ACM},
  address = {New York, NY, USA},
 } 
-'''
+```
 
 ## CONTACT
-'''
+```
 Mian Lu
 lumianph@gmail.com
-'''
+```
