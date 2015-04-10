@@ -6,7 +6,8 @@ I am porting the GQD library (developed by me many years ago) from Google Code t
 You still can visit the old page for GQD: https://code.google.com/p/gpuprec/
 
 ## CITATION
-You can cite this library:
+You can cite this library as:
+
 **Mian Lu, Bingsheng He, and Qiong Luo. Supporting extended precision on graphics processors. In Proceedings of the Sixth International Workshop on Data Management on New Hardware (DaMoN), 2010**
 
 BibTex:
