@@ -7,7 +7,7 @@ You still can visit the old page for GQD: https://code.google.com/p/gpuprec/
 
 ## CITATION
 You can cite this library:
-Mian Lu, Bingsheng He, and Qiong Luo. 2010. Supporting extended precision on graphics processors. In Proceedings of the Sixth International Workshop on Data Management on New Hardware (DaMoN '10), Anastasia Ailamaki and Peter A. Boncz (Eds.). ACM, New York, NY, USA, 19-26. DOI=10.1145/1869389.1869392 http://doi.acm.org/10.1145/1869389.1869392
+**Mian Lu, Bingsheng He, and Qiong Luo. Supporting extended precision on graphics processors. In Proceedings of the Sixth International Workshop on Data Management on New Hardware (DaMoN), 2010**
 
 BibTex:
 @inproceedings{Lu:2010:SEP:1869389.1869392,
