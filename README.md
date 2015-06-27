@@ -1,8 +1,15 @@
-# GQD: An Extended-Precision Library on GPUs
+# libgqd: QD library for GPUs
 
 ## INTRODUCTION
-libgqd based on GQD which developed by Mian Lu.
+QD library has written by LBNL.
+GQD was developed by Mian Lu based on QD.
+libgqd is based on GQD.
 
+
+##License
+```
+3-clause BSD license.
+```
 
 ## Extarnal Links
 ```
