@@ -11,7 +11,7 @@
  * WARNING: these functions take long time to compile, 
  * e.g., several hours
  * */
-//#define ALL_MATH
+#define ALL_MATH 1
 
 
 /* type definition */

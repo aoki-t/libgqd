@@ -4,9 +4,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+//#include <sys/time.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <helper_cuda.h>
 
 /** for CUDA 2.0 */
 #ifdef CUDA_2
@@ -20,11 +21,11 @@
 #define GLOBAL_THREAD_OFFSET (blockDim.x*blockIdx.x + threadIdx.x)
 
 /** macro utility */
-#define GPUMALLOC(D_DATA, MEM_SIZE) cutilSafeCall(cudaMalloc(D_DATA, MEM_SIZE))
-#define TOGPU(D_DATA, H_DATA, MEM_SIZE) cutilSafeCall(cudaMemcpy(D_DATA, H_DATA, MEM_SIZE, cudaMemcpyHostToDevice))
-#define FROMGPU( H_DATA, D_DATA, MEM_SIZE ) cutilSafeCall(cudaMemcpy( H_DATA, D_DATA, MEM_SIZE, cudaMemcpyDeviceToHost))
-#define GPUTOGPU( DEST, SRC, MEM_SIZE ) cutilSafeCall(cudaMemcpy( DEST, SRC, MEM_SIZE, cudaMemcpyDeviceToDevice ))
-#define GPUFREE( MEM ) cutilSafeCall(cudaFree(MEM));
+#define GPUMALLOC(D_DATA, MEM_SIZE)         checkCudaErrors( cudaMalloc(D_DATA, MEM_SIZE) )
+#define TOGPU(D_DATA, H_DATA, MEM_SIZE)     checkCudaErrors( cudaMemcpy(D_DATA, H_DATA, MEM_SIZE, cudaMemcpyHostToDevice) )
+#define FROMGPU( H_DATA, D_DATA, MEM_SIZE ) checkCudaErrors( cudaMemcpy( H_DATA, D_DATA, MEM_SIZE, cudaMemcpyDeviceToHost) )
+#define GPUTOGPU( DEST, SRC, MEM_SIZE )     checkCudaErrors( cudaMemcpy( DEST, SRC, MEM_SIZE, cudaMemcpyDeviceToDevice ) )
+#define GPUFREE( MEM )                      checkCudaErrors( cudaFree(MEM) );
 
 
 /*timing functions*/
@@ -71,29 +72,33 @@ public:
 	}
 	
 	float reportAndPrint(const char* name) const {
-		printf("Processing time for %s: %f sec\n", name, _t/1000.f);
+		float sec = _t / 1000.f;
+		printf("Processing time for %s: %f sec\n", name, sec);
+		return sec;
 	}
 };
 
 class CPUTimer : public Timer {
 private:
-	struct timeval _start, _end;
+//	struct timeval _start, _end;
 public:
 
-	CPUTimer() :
-	_start(), _end() {
-	}
+//	CPUTimer() :
+//	_start(), _end() {
+//	}
+
+	CPUTimer(){}
 
 	~CPUTimer() {
 	}
 
 	void go() {
-		gettimeofday(&_start, NULL);
+//		gettimeofday(&_start, NULL);
 	}
 
 	void stop() {
-		gettimeofday(&_end, NULL);
-		_t += ((_end.tv_sec - _start.tv_sec)*1000.0f + (_end.tv_usec - _start.tv_usec) / 1000.0f);
+//		gettimeofday(&_end, NULL);
+//		_t += ((_end.tv_sec - _start.tv_sec)*1000.0f + (_end.tv_usec - _start.tv_usec) / 1000.0f);
 	}
 };
 
@@ -119,27 +124,27 @@ public:
 /*CUDA helper functions*/
 
 // This will output the proper CUDA error strings in the event that a CUDA host call returns an error
-#define checkCudaErrors(err)		   __checkCudaErrors (err, __FILE__, __LINE__)
-
-inline void __checkCudaErrors(cudaError err, const char *file, const int line) {
-	if (cudaSuccess != err) {
-		fprintf(stderr, "%s(%i) : CUDA Runtime API error %d: %s.\n",
-				file, line, (int) err, cudaGetErrorString(err));
-		exit(-1);
-	}
-}
+//#define checkCudaErrors(err)		   __checkCudaErrors (err, __FILE__, __LINE__)
+//
+//inline void __checkCudaErrors(cudaError err, const char *file, const int line) {
+//	if (cudaSuccess != err) {
+//		fprintf(stderr, "%s(%i) : CUDA Runtime API error %d: %s.\n",
+//				file, line, (int) err, cudaGetErrorString(err));
+//		exit(-1);
+//	}
+//}
 
 // This will output the proper error string when calling cudaGetLastError
-#define getLastCudaError(msg)	  __getLastCudaError (msg, __FILE__, __LINE__)
-
-inline void __getLastCudaError(const char *errorMessage, const char *file, const int line) {
-	cudaError_t err = cudaGetLastError();
-	if (cudaSuccess != err) {
-		fprintf(stderr, "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",
-				file, line, errorMessage, (int) err, cudaGetErrorString(err));
-		exit(-1);
-	}
-}
+//#define getLastCudaError(msg)	  __getLastCudaError (msg, __FILE__, __LINE__)
+//
+//inline void __getLastCudaError(const char *errorMessage, const char *file, const int line) {
+//	cudaError_t err = cudaGetLastError();
+//	if (cudaSuccess != err) {
+//		fprintf(stderr, "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",
+//				file, line, errorMessage, (int) err, cudaGetErrorString(err));
+//		exit(-1);
+//	}
+//}
 
 
 

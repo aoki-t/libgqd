@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="header">
+      <UniqueIdentifier>{44015df1-a22c-40d2-aeb1-8b0e17d59583}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{b520bec5-c412-49c3-92d0-7b776b69c483}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="inc\gdd_basic.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gdd_exp.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gdd_log.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gdd_sincos.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gdd_sqrt.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gqd.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gqd_basic.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gqd_exp.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gqd_log.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gqd_sincos.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\gqd_sqrt.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+    <CudaCompile Include="inc\inline.cu">
+      <Filter>src</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\cuda_header.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\gqd_type.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\common.cu">
+      <Filter>header</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
