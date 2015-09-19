@@ -5,7 +5,9 @@
 
 
 __device__
-void sincos_taylor(const gqd_real &a, gqd_real &sin_a, gqd_real &cos_a) {
+void sincos_taylor(const gqd_real &a, 
+				   gqd_real &sin_a, gqd_real &cos_a) 
+{
 	const double thresh = 0.5 * _qd_eps * fabs(to_double(a));
 	gqd_real p, s, t, x;
 
@@ -129,14 +131,14 @@ gqd_real sin(const gqd_real &a) {
 
 	if (k == 0) {
 		switch (j) {
-			case 0:
-				return sin_taylor(t);
-			case 1:
-				return cos_taylor(t);
-			case -1:
-				return negative(cos_taylor(t));
-			default:
-				return negative(sin_taylor(t));
+	  case 0:
+		  return sin_taylor(t);
+	  case 1:
+		  return cos_taylor(t);
+	  case -1:
+		  return negative(cos_taylor(t));
+	  default:
+		  return negative(sin_taylor(t));
 		}
 	}
 
@@ -243,14 +245,14 @@ gqd_real cos(const gqd_real &a) {
 
 	if (k == 0) {
 		switch (j) {
-			case 0:
-				return cos_taylor(t);
-			case 1:
-				return negative(sin_taylor(t));
-			case -1:
-				return sin_taylor(t);
-			default:
-				return negative(cos_taylor(t));
+	  		case 0:
+		  		return cos_taylor(t);
+			  case 1:
+				  return negative(sin_taylor(t));
+			  case -1:
+				  return sin_taylor(t);
+			  default:
+				  return negative(cos_taylor(t));
 		}
 	}
 
@@ -387,9 +389,9 @@ void sincos(const gqd_real &a, gqd_real &sin_a, gqd_real &cos_a) {
 
 __device__
 gqd_real tan(const gqd_real &a) {
-	gqd_real s, c;
-	sincos(a, s, c);
-	return s/c;
+  gqd_real s, c;
+  sincos(a, s, c);
+  return s/c;
 }
 
 #ifdef ALL_MATH	
