@@ -7,13 +7,13 @@
    This is a natural logarithm (i.e., base e).            */
 __device__
 gdd_real log(const gdd_real &a) {
-  
+
 	if (is_one(a)) {	
 		return make_dd(0.0);
 	}
 
-//!!!!!!!!!
-//TO DO: return an errro
+	//!!!!!!!!!
+	//TO DO: return an errro
 	if (a.x <= 0.0) {
 		//return _nan;
 		return make_dd( 0.0 );

@@ -8,22 +8,22 @@
 __device__
 gdd_real sin_taylor(const gdd_real &a) {
 	const double thresh = 0.5 * fabs(to_double(a)) * _dd_eps;
-  	gdd_real r, s, t, x;
+	gdd_real r, s, t, x;
 
-  	if (is_zero(a)) {
-    		return make_dd(0.0);
-  	}
+	if (is_zero(a)) {
+			return make_dd(0.0);
+	}
 
-  	int i = 0;
-  	x = negative(sqr(a)); //-sqr(a);
-  	s = a;
+	int i = 0;
+	x = negative(sqr(a)); //-sqr(a);
+	s = a;
 	r = a;
-  	do {
-   		r = r*x;
-    		t = r * dd_inv_fact[i];
-    		s = s + t;
-    		i += 2;
-  	} while (i < n_dd_inv_fact && fabs(to_double(t)) > thresh);
+	do {
+		r = r*x;
+		t = r * dd_inv_fact[i];
+		s = s + t;
+		i += 2;
+	} while (i < n_dd_inv_fact && fabs(to_double(t)) > thresh);
 
 	return s;
 }
@@ -31,36 +31,36 @@ gdd_real sin_taylor(const gdd_real &a) {
 __device__
 gdd_real cos_taylor(const gdd_real &a) {
 	const double thresh = 0.5 * _dd_eps;
-  	gdd_real r, s, t, x;
+	gdd_real r, s, t, x;
 	int i = 1;
 
-  	if (is_zero(a)) {
-    		return make_dd(1.0);
-  	}
+	if (is_zero(a)) {
+		return make_dd(1.0);
+	}
 
-  	x = negative(sqr(a));
-  	r = x;
-  	s = 1.0 + mul_pwr2(r, 0.5);
-  	do {
-    		r = r*x;
-    		t = r * dd_inv_fact[i];
-    		s = s + t;
-    		i += 2;
-  	} while (i < n_dd_inv_fact && fabs(to_double(t)) > thresh);
+	x = negative(sqr(a));
+	r = x;
+	s = 1.0 + mul_pwr2(r, 0.5);
+	do {
+		r = r*x;
+		t = r * dd_inv_fact[i];
+		s = s + t;
+		i += 2;
+	} while (i < n_dd_inv_fact && fabs(to_double(t)) > thresh);
 
-  	return s;
+	return s;
 }
 
 __device__
 void sincos_taylor(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a) {
-  	if (is_zero(a)) {
-    		sin_a.x = 0.0; sin_a.y = 0.0;
-    		cos_a.x = 1.0; cos_a.y = 0.0;
-    		return;
-  	}
+	if (is_zero(a)) {
+		sin_a.x = 0.0; sin_a.y = 0.0;
+		cos_a.x = 1.0; cos_a.y = 0.0;
+		return;
+	}
 
-  	sin_a = sin_taylor(a);
-  	cos_a = sqrt(1.0 - sqr(sin_a));
+	sin_a = sin_taylor(a);
+	cos_a = sqrt(1.0 - sqr(sin_a));
 }
 
 
@@ -100,14 +100,14 @@ gdd_real sin(const gdd_real &a) {
 
 	if (k == 0) {
 		switch (j) {
-	  case 0:
-		  return sin_taylor(t);
-	  case 1:
-		  return cos_taylor(t);
-	  case -1:
-		  return negative(cos_taylor(t));
-	  default:
-		  return negative(sin_taylor(t));
+			case 0:
+				return sin_taylor(t);
+			case 1:
+				return cos_taylor(t);
+			case -1:
+				return negative(cos_taylor(t));
+			default:
+				return negative(sin_taylor(t));
 		}
 	}
 
@@ -181,14 +181,14 @@ gdd_real cos(const gdd_real &a) {
 
 	if (k == 0) {
 		switch (j) {
-	  case 0:
-		  return cos_taylor(t);
-	  case 1:
-		  return negative(sin_taylor(t));
-	  case -1:
-		  return sin_taylor(t);
-	  default:
-		  return negative(cos_taylor(t));
+			case 0:
+				return cos_taylor(t);
+			case 1:
+				return negative(sin_taylor(t));
+			case -1:
+				return sin_taylor(t);
+			default:
+				return negative(cos_taylor(t));
 		}
 	}
 
@@ -323,8 +323,8 @@ gdd_real atan2(const gdd_real &y, const gdd_real &x) {
 			//return dd_real::_nan;
 			return make_dd(0.0);
 		}
-
 		return (is_positive(y)) ? _dd_pi2 : negative(_dd_pi2);
+
 	} else if (is_zero(y)) {
 		return (is_positive(x)) ? make_dd(0.0) : _dd_pi;
 	}
@@ -361,7 +361,7 @@ gdd_real atan2(const gdd_real &y, const gdd_real &x) {
 
 __device__
 gdd_real atan(const gdd_real &a) {
-  return atan2(a, make_dd(1.0));
+	return atan2(a, make_dd(1.0));
 }
 
 

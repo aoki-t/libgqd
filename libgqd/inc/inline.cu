@@ -10,8 +10,7 @@
 
 //computs fl( a + b ) and err( a + b ), assumes |a| > |b|
 __host__ __device__
-double quick_two_sum( double a , double b, double &err )
-{
+double quick_two_sum( double a, double b, double &err ) {
 
 	if(b == 0.0) {
 		err = 0.0;
@@ -25,8 +24,7 @@ double quick_two_sum( double a , double b, double &err )
 }
 
 __host__ __device__
-double two_sum( double a, double b, double &err )
-{
+double two_sum( double a, double b, double &err ) {
 
 	if( (a == 0.0) || (b == 0.0) ) {
 		err = 0.0;
@@ -43,21 +41,20 @@ double two_sum( double a, double b, double &err )
 
 //computes fl( a - b ) and err( a - b ), assumes |a| >= |b|
 __host__ __device__
-double quick_two_diff( double a, double b, double &err )
-{
+double quick_two_diff( double a, double b, double &err ) {
 	if(a == b) {
 		err = 0.0;
 		return 0.0;
 	}
 
 	double s;
-        
+
 	/*
 	if(fabs((a-b)/a) < GPU_D_EPS) {
-                s = 0.0;
-                err = 0.0;
-                return s;
-        }
+		s = 0.0;
+		err = 0.0;
+		return s;
+	}
 	*/
 
 	s = a - b;
@@ -67,8 +64,7 @@ double quick_two_diff( double a, double b, double &err )
 
 //computes fl( a - b ) and err( a - b )
 __host__ __device__
-double two_diff( double a, double b, double &err )
-{
+double two_diff( double a, double b, double &err ) {
 	if(a == b) {
 		err = 0.0;
 		return 0.0;
@@ -91,8 +87,7 @@ double two_diff( double a, double b, double &err )
 
 // Computes high word and lo word of a 
 __host__ __device__
-void split(double a, double &hi, double &lo) 
-{
+void split(double a, double &hi, double &lo) {
 	double temp;
 	if (a > _QD_SPLIT_THRESH || a < -_QD_SPLIT_THRESH)
 	{
@@ -111,8 +106,7 @@ void split(double a, double &hi, double &lo)
 
 /* Computes fl(a*b) and err(a*b). */
  __device__
-double two_prod(double a, double b, double &err) 
-{
+double two_prod(double a, double b, double &err) {
 	
 	double a_hi, a_lo, b_hi, b_lo;
 	double p = a * b;
@@ -127,8 +121,7 @@ double two_prod(double a, double b, double &err)
 
 /* Computes fl(a*a) and err(a*a).  Faster than the above method. */
 __host__ __device__
-double two_sqr(double a, double &err) 
-{
+double two_sqr(double a, double &err) {
 	double hi, lo;
 	double q = a * a;
 	split(a, hi, lo);
@@ -138,10 +131,10 @@ double two_sqr(double a, double &err)
 
 /* Computes the nearest integer to d. */
 __host__ __device__
-double nint(double d) 
-{
-	if (d == floor(d))
+double nint(double d) {
+	if (d == floor(d)){
 		return d;
+	}
 	return floor(d + 0.5);
 }
 
