@@ -75,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\cuda_header.h" />
+    <ClInclude Include="inc\gdd_real.h" />
     <ClInclude Include="inc\gqd_type.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

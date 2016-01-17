@@ -15,7 +15,7 @@
 
 
 /* type definition */
-typedef double2 gdd_real;
+//typedef double2 gdd_real;
 
 typedef double4 gqd_real;
 

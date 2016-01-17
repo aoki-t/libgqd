@@ -1,7 +1,9 @@
 #ifndef __GDD_SIN_COS_CU__
 #define __GDD_SIN_COS_CU__
 
-#include "common.cu"
+#include "gdd_real.h"
+
+//#include "common.cu"
 
 /* Computes sin(a) using Taylor series.
    Assumes |a| <= pi/32.                           */
@@ -11,7 +13,7 @@ gdd_real sin_taylor(const gdd_real &a) {
 	gdd_real r, s, t, x;
 
 	if (is_zero(a)) {
-			return make_dd(0.0);
+		return 0.0;
 	}
 
 	int i = 0;
@@ -20,7 +22,7 @@ gdd_real sin_taylor(const gdd_real &a) {
 	r = a;
 	do {
 		r = r*x;
-		t = r * dd_inv_fact[i];
+		t = r * gdd_real(dd_inv_fact[i][0], dd_inv_fact[i][1]);
 		s = s + t;
 		i += 2;
 	} while (i < n_dd_inv_fact && fabs(to_double(t)) > thresh);
@@ -35,7 +37,7 @@ gdd_real cos_taylor(const gdd_real &a) {
 	int i = 1;
 
 	if (is_zero(a)) {
-		return make_dd(1.0);
+		return gdd_real(1.0);
 	}
 
 	x = negative(sqr(a));
@@ -43,7 +45,7 @@ gdd_real cos_taylor(const gdd_real &a) {
 	s = 1.0 + mul_pwr2(r, 0.5);
 	do {
 		r = r*x;
-		t = r * dd_inv_fact[i];
+		t = r * gdd_real(dd_inv_fact[i][0], dd_inv_fact[i][1]);
 		s = s + t;
 		i += 2;
 	} while (i < n_dd_inv_fact && fabs(to_double(t)) > thresh);
@@ -54,8 +56,8 @@ gdd_real cos_taylor(const gdd_real &a) {
 __device__
 void sincos_taylor(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a) {
 	if (is_zero(a)) {
-		sin_a.x = 0.0; sin_a.y = 0.0;
-		cos_a.x = 1.0; cos_a.y = 0.0;
+		sin_a.dd.x = 0.0; sin_a.dd.y = 0.0;
+		cos_a.dd.x = 1.0; cos_a.dd.y = 0.0;
 		return;
 	}
 
@@ -69,7 +71,7 @@ __device__
 gdd_real sin(const gdd_real &a) {  
 
 	if (is_zero(a)) {
-		return make_dd(0.0);
+		return gdd_real(0.0);
 	}
 
 	// approximately reduce modulo 2*pi
@@ -78,24 +80,26 @@ gdd_real sin(const gdd_real &a) {
 
 	// approximately reduce modulo pi/2 and then modulo pi/16.
 	gdd_real t;
-	double q = floor(r.x / _dd_pi2.x + 0.5);
+	double q = floor(r.dd.x / _dd_pi2.dd.x + 0.5);
 	t = r - _dd_pi2 * q;
 	int j = (int)(q);
-	q = floor(t.x / _dd_pi16.x + 0.5);
+	q = floor(t.dd.x / _dd_pi16.dd.x + 0.5);
 	t = t - _dd_pi16 * q;
 	int k = (int)(q);
 	int abs_k = abs(k);
 
 	if (j < -2 || j > 2) {
 		//dd_real::error("(dd_real::sin): Cannot reduce modulo pi/2.");
-		r.x = r.y = 0.0;
-		return r;
+		//r.dd.x = r.dd.y = 0.0;
+		//return r;
+		return _dd_qnan;
 	}
 
 	if (abs_k > 4) {
 		//dd_real::error("(dd_real::sin): Cannot reduce modulo pi/16.");
-		r.x = r.y = 0.0;
-		return r;
+		//r.dd.x = r.dd.y = 0.0;
+		//return r;
+		return _dd_qnan;
 	}
 
 	if (k == 0) {
@@ -111,8 +115,8 @@ gdd_real sin(const gdd_real &a) {
 		}
 	}
 
-	gdd_real u = d_dd_cos_table[abs_k-1];
-	gdd_real v = d_dd_sin_table[abs_k-1];
+	gdd_real u(d_dd_cos_table[abs_k - 1][0], d_dd_cos_table[abs_k - 1][1]);
+	gdd_real v(d_dd_sin_table[abs_k - 1][0], d_dd_sin_table[abs_k - 1][0]);
 	gdd_real sin_t, cos_t;
 	sincos_taylor(t, sin_t, cos_t);
 	if (j == 0) {
@@ -150,7 +154,7 @@ __device__
 gdd_real cos(const gdd_real &a) {
 
 	if (is_zero(a)) {
-		return make_dd(1.0);
+		return gdd_real(1.0);
 	}
 
 	// approximately reduce modulo 2*pi
@@ -159,10 +163,10 @@ gdd_real cos(const gdd_real &a) {
 
 	// approximately reduce modulo pi/2 and then modulo pi/16
 	gdd_real t;
-	double q = floor(r.x / _dd_pi2.x + 0.5);
+	double q = floor(r.dd.x / _dd_pi2.dd.x + 0.5);
 	t = r - _dd_pi2 * q;
 	int j = (int)(q);
-	q = floor(t.x / _dd_pi16.x + 0.5);
+	q = floor(t.dd.x / _dd_pi16.dd.x + 0.5);
 	t = t - _dd_pi16 * q;
 	int k = (int)(q);
 	int abs_k = abs(k);
@@ -170,13 +174,13 @@ gdd_real cos(const gdd_real &a) {
 	if (j < -2 || j > 2) {
 		//dd_real::error("(dd_real::cos): Cannot reduce modulo pi/2.");
 		//return dd_real::_nan;
-		return make_dd(0.0);
+		return _dd_qnan;
 	}
 
 	if (abs_k > 4) {
 		//dd_real::error("(dd_real::cos): Cannot reduce modulo pi/16.");
 		//return dd_real::_nan;
-		return make_dd(0.0);
+		return _dd_qnan;
 	}
 
 	if (k == 0) {
@@ -194,8 +198,8 @@ gdd_real cos(const gdd_real &a) {
 
 	gdd_real sin_t, cos_t;
 	sincos_taylor(t, sin_t, cos_t);
-	gdd_real u = d_dd_cos_table[abs_k - 1];
-	gdd_real v = d_dd_sin_table[abs_k - 1];
+	gdd_real u(d_dd_cos_table[abs_k - 1][0], d_dd_cos_table[abs_k - 1][1]);
+	gdd_real v(d_dd_sin_table[abs_k - 1][0], d_dd_sin_table[abs_k - 1][0]);
 
 	if (j == 0) {
 		if (k > 0) {
@@ -231,8 +235,8 @@ __device__
 void sincos(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a) {
 
 	if (is_zero(a)) {
-		sin_a = make_dd(0.0);
-		cos_a = make_dd(1.0);
+		sin_a = gdd_real(0.0);
+		cos_a = gdd_real(1.0);
 		return;
 	}
 
@@ -242,11 +246,11 @@ void sincos(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a) {
 
 	// approximately reduce module pi/2 and pi/16
 	gdd_real t;
-	double q = floor(r.x / _dd_pi2.x + 0.5);
+	double q = floor(r.dd.x / _dd_pi2.dd.x + 0.5);
 	t = r - _dd_pi2 * q;
 	int j = (int)(q);
 	int abs_j = abs(j);
-	q = floor(t.x / _dd_pi16.x + 0.5);
+	q = floor(t.dd.x / _dd_pi16.dd.x + 0.5);
 	t = t - _dd_pi16 * q;
 	int k = (int)(q);
 	int abs_k = abs(k);
@@ -254,14 +258,14 @@ void sincos(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a) {
 	if (abs_j > 2) {
 		//dd_real::error("(dd_real::sincos): Cannot reduce modulo pi/2.");
 		//cos_a = sin_a = dd_real::_nan;
-		cos_a = sin_a = make_dd(0.0);
+		cos_a = sin_a = _dd_qnan;
 		return;
 	}
 
 	if (abs_k > 4) {
 		//dd_real::error("(dd_real::sincos): Cannot reduce modulo pi/16.");
 		//cos_a = sin_a = dd_real::_nan;
-		cos_a = sin_a = make_dd(0.0);
+		cos_a = sin_a = _dd_qnan;
 		return;
 	}
 
@@ -274,8 +278,8 @@ void sincos(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a) {
 		s = sin_t;
 		c = cos_t;
 	} else {
-		gdd_real u = d_dd_cos_table[abs_k-1];
-		gdd_real v = d_dd_sin_table[abs_k-1];
+		gdd_real u(d_dd_cos_table[abs_k - 1][0], d_dd_cos_table[abs_k - 1][1]);
+		gdd_real v(d_dd_sin_table[abs_k - 1][0], d_dd_sin_table[abs_k - 1][0]);
 
 		if (k > 0) {
 			s = u * sin_t + v * cos_t;
@@ -321,12 +325,14 @@ gdd_real atan2(const gdd_real &y, const gdd_real &x) {
 			/* Both x and y is zero. */
 			//dd_real::error("(dd_real::atan2): Both arguments zero.");
 			//return dd_real::_nan;
-			return make_dd(0.0);
+			
+			//return gdd_real(0.0);
+			return _dd_qnan;
 		}
 		return (is_positive(y)) ? _dd_pi2 : negative(_dd_pi2);
 
 	} else if (is_zero(y)) {
-		return (is_positive(x)) ? make_dd(0.0) : _dd_pi;
+		return (is_positive(x)) ? gdd_real(0.0) : _dd_pi;
 	}
 
 	if (x == y) {
@@ -342,10 +348,10 @@ gdd_real atan2(const gdd_real &y, const gdd_real &x) {
 	gdd_real yy = y / r;
 
 	/* Compute double precision approximation to atan. */
-	gdd_real z = make_dd(atan2(to_double(y), to_double(x)));
+	gdd_real z = gdd_real(atan2(to_double(y), to_double(x)));
 	gdd_real sin_z, cos_z;
 
-	if (abs(xx.x) > abs(yy.x)) {
+	if (abs(xx.dd.x) > abs(yy.dd.x)) {
 		/* Use Newton iteration 1.  z' = z + (y - sin(z)) / cos(z)  */
 		sincos(z, sin_z, cos_z);
 		z = z + (yy - sin_z)/cos_z;
@@ -361,7 +367,7 @@ gdd_real atan2(const gdd_real &y, const gdd_real &x) {
 
 __device__
 gdd_real atan(const gdd_real &a) {
-	return atan2(a, make_dd(1.0));
+	return atan2(a, gdd_real(1.0));
 }
 
 
@@ -372,7 +378,7 @@ gdd_real asin(const gdd_real &a) {
 	if (abs_a > 1.0) {
 		//dd_real::error("(dd_real::asin): Argument out of domain.");
 		//return dd_real::_nan;
-		return make_dd(0.0);
+		return _dd_qnan;
 	}
 
 	if (is_one(abs_a)) {
@@ -390,11 +396,11 @@ gdd_real acos(const gdd_real &a) {
 	if (abs_a > 1.0) {
 		//dd_real::error("(dd_real::acos): Argument out of domain.");
 		//return dd_real::_nan;
-		return make_dd(0.0);
+		return _dd_qnan;
 	}
 
 	if (is_one(abs_a)) {
-		return (is_positive(a)) ? make_dd(0.0) : _dd_pi;
+		return (is_positive(a)) ? gdd_real(0.0) : _dd_pi;
 	}
 
 	return atan2(sqrt(1.0 - sqr(a)), a);
@@ -403,7 +409,7 @@ gdd_real acos(const gdd_real &a) {
 __device__
 gdd_real sinh(const gdd_real &a) {
 	if (is_zero(a)) {
-		return make_dd(0.0);
+		return gdd_real(0.0);
 	}
 
 	if (abs(a) > 0.05) {
@@ -435,7 +441,7 @@ gdd_real sinh(const gdd_real &a) {
 __device__
 gdd_real cosh(const gdd_real &a) {
 	if (is_zero(a)) {
-		return make_dd(1.0);
+		return gdd_real(1.0);
 	}
 
 	gdd_real ea = exp(a);
@@ -446,7 +452,7 @@ gdd_real cosh(const gdd_real &a) {
 __device__
 gdd_real tanh(const gdd_real &a) {
 	if (is_zero(a)) {
-		return make_dd(0.0);
+		return gdd_real(0.0);
 	}
 
 	gdd_real ea = exp(a);
@@ -473,7 +479,7 @@ gdd_real acosh(const gdd_real &a) {
 	if (a < 1.0) {
 		//dd_real::error("(dd_real::acosh): Argument out of domain.");
 		//return dd_real::_nan;
-		return make_dd(0.0);
+		return _dd_qnan;
 	}
 
 	return log(a + sqrt(sqr(a) - 1.0));
@@ -485,7 +491,7 @@ gdd_real atanh(const gdd_real &a) {
 	if (abs(a) >= 1.0) {
 		//dd_real::error("(dd_real::atanh): Argument out of domain.");
 		//return dd_real::_nan;
-		return make_dd(0.0);
+		return _dd_qnan;
 	}
 
 	return mul_pwr2(log((1.0 + a) / (1.0 - a)), 0.5);

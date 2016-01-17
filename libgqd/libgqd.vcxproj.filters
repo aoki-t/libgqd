@@ -56,5 +56,8 @@
     <ClInclude Include="inc\common.cu">
       <Filter>header</Filter>
     </ClInclude>
+    <ClInclude Include="inc\gdd_real.h">
+      <Filter>header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

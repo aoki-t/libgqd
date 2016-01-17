@@ -139,6 +139,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <AdditionalOptions>--ftz=false --fmad=false -Xcompiler "/wd 4819" %(AdditionalOptions)</AdditionalOptions>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
       <CudaRuntime>Static</CudaRuntime>
+      <GenerateLineInfo>true</GenerateLineInfo>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>$(cuda_path)\lib\$(PlatformName)</AdditionalLibraryDirectories>

@@ -3,26 +3,32 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+
 #include "gqd_type.h"		//type definitions for gdd_real and gqd_real
 #include "cuda_header.h"
+#include "gdd_real.h"
 #include "inline.cu"		//basic functions used by both gdd_real and gqd_real
 
-
+////#define SLOPPY_ADD 1
+////#define SLOPPY_DIV 1
+////#define USE_FMA 1
 
 /* type definitions, defined in the type.h */
 //defined in gqd_type.h
 
 
-/* type construction */
-__device__ __host__
-gdd_real make_dd( const double x, const double y ) {
-	return make_double2( x, y );
-}
 
-__device__ __host__
-gdd_real make_dd( const double x ) {
-	return make_double2( x, 0.0 );
-}
+/* type construction */
+//__device__ __host__
+//gdd_real make_dd( const double x, const double y ) {
+//	return make_double2( x, y );
+//}
+//
+//__device__ __host__
+//gdd_real make_dd( const double x ) {
+//	return make_double2( x, 0.0 );
+//}
 
 
 __device__ __host__
@@ -35,16 +41,15 @@ gqd_real make_qd( const double x ) {
 	return make_qd( x, 0.0, 0.0, 0.0 );
 }
 
-/* constants */
-#define _dd_eps    (4.93038065763132e-32)  // 2^-104
-#define _dd_e      make_dd(2.718281828459045091e+00, 1.445646891729250158e-16)
-#define _dd_log2   make_dd(6.931471805599452862e-01, 2.319046813846299558e-17)
-#define _dd_2pi    make_dd(6.283185307179586232e+00, 2.449293598294706414e-16)
-#define _dd_pi     make_dd(3.141592653589793116e+00, 1.224646799147353207e-16)
-#define _dd_pi2    make_dd(1.570796326794896558e+00, 6.123233995736766036e-17)
-#define _dd_pi16   make_dd(1.963495408493620697e-01, 7.654042494670957545e-18)
-#define _dd_pi4    make_dd(7.853981633974482790e-01, 3.061616997868383018e-17)
-#define _dd_3pi4   make_dd(2.356194490192344837e+00, 9.1848509936051484375e-17)
+union type_trans_dbl{
+	__int64 i64_value;
+	double	dbl_value;
+};
+//extern __device__ __constant__ double __h_inf;
+//extern __device__ __constant__ double __dd_inf;
+//extern __device__ __constant__ double __h_qnan;
+//extern __device__ __constant__ double __dd_qnan;
+
 
 
 #define _qd_eps     (1.21543267145725e-63) // = 2^-209
@@ -60,10 +65,16 @@ gqd_real make_qd( const double x ) {
 
 
 /* data in the constant memory */
-#define n_dd_inv_fact (15)
-static __device__ __constant__ gdd_real dd_inv_fact[n_dd_inv_fact];
-static __device__ __constant__ gdd_real d_dd_sin_table[4];
-static __device__ __constant__ gdd_real d_dd_cos_table[4];
+//#define n_dd_inv_fact (15)
+//static __device__ __constant__ double _dd_eps = (4.93038065763132e-32);
+//static __device__ __constant__ double _dd_zero[2];
+//static __device__ __constant__ double _dd_one[2];
+//static __device__ __constant__ double _dd_qnan[2];
+
+//extern __device__ __constant__ double dd_special_tbl[n_dd_special_tbl][2];
+//extern __device__ __constant__ double dd_inv_fact[n_dd_inv_fact][2];
+//extern __device__ __constant__ double d_dd_sin_table[4][2];
+//extern __device__ __constant__ double d_dd_cos_table[4][2];
 
 static const int n_inv_fact = 15;
 static __device__ __constant__ gqd_real inv_fact[15];
@@ -72,58 +83,142 @@ static __device__ __constant__ gqd_real d_cos_table[256];
 
 /** initialization function */
 void GDDStart(const int device) {
-	printf("GDD turns on...\n");
+	printf("GDD turns on...");
 	cudaSetDevice(device);
 
-	gdd_real h_inv_fact[] = {
-		make_dd( 1.66666666666666657e-01,  9.25185853854297066e-18),
-		make_dd( 4.16666666666666644e-02,  2.31296463463574266e-18),
-		make_dd( 8.33333333333333322e-03,  1.15648231731787138e-19),
-		make_dd( 1.38888888888888894e-03, -5.30054395437357706e-20),
-		make_dd( 1.98412698412698413e-04,  1.72095582934207053e-22),
-		make_dd( 2.48015873015873016e-05,  2.15119478667758816e-23),
-		make_dd( 2.75573192239858925e-06, -1.85839327404647208e-22),
-		make_dd( 2.75573192239858883e-07,  2.37677146222502973e-23),
-		make_dd( 2.50521083854417202e-08, -1.44881407093591197e-24),
-		make_dd( 2.08767569878681002e-09, -1.20734505911325997e-25),
-		make_dd( 1.60590438368216133e-10,  1.25852945887520981e-26),
-		make_dd( 1.14707455977297245e-11,  2.06555127528307454e-28),
-		make_dd( 7.64716373181981641e-13,  7.03872877733453001e-30),
-		make_dd( 4.77947733238738525e-14,  4.39920548583408126e-31),
-		make_dd( 2.81145725434552060e-15,  1.65088427308614326e-31)
-	};
+	//cudaStream_t st_inv, st_sin_tbl, st_cos_tbl, st_spcl_val;
+	//cudaStreamCreate(&st_spcl_val);
+	//cudaStreamCreate(&st_inv);
+	//cudaStreamCreate(&st_sin_tbl);
+	//cudaStreamCreate(&st_cos_tbl);
 
-	checkCudaErrors( cudaMemcpyToSymbol( dd_inv_fact, h_inv_fact, sizeof(gdd_real)*n_dd_inv_fact ) );
+	//#define CUDART_INF              __longlong_as_double(0x7ff0000000000000ULL)
+	//#define CUDART_NAN              __longlong_as_double(0xfff8000000000000ULL)
+	//double *dev_param;
+	//cudaMalloc((void **)&dev_param, sizeof(double[2]));
+	//double h_dd_e[2] = { 2.718281828459045091e+00, 1.445646891729250158e-16 };
+	//checkCudaErrors(cudaMemcpyAsync(dev_param, h_dd_e, sizeof(double) * 2, cudaMemcpyHostToDevice, st_spcl_val));
 
-	gdd_real h_sin_table [] = {
-		make_dd(1.950903220161282758e-01, -7.991079068461731263e-18),
-		make_dd(3.826834323650897818e-01, -1.005077269646158761e-17),
-		make_dd(5.555702330196021776e-01,  4.709410940561676821e-17),
-		make_dd(7.071067811865475727e-01, -4.833646656726456726e-17)
-	};
-	checkCudaErrors(cudaMemcpyToSymbol(d_dd_sin_table, h_sin_table, sizeof(gdd_real)*4));
+	//double h_inf = std::numeric_limits<double>::infinity();
+	//checkCudaErrors(cudaMemcpyToSymbolAsync(__h_inf, &h_inf, sizeof(double), 0, cudaMemcpyHostToDevice, st_spcl_val));
 
-	gdd_real h_cos_table [] = {
-		make_dd(9.807852804032304306e-01,  1.854693999782500573e-17),
-		make_dd(9.238795325112867385e-01,  1.764504708433667706e-17),
-		make_dd(8.314696123025452357e-01,  1.407385698472802389e-18),
-		make_dd(7.071067811865475727e-01, -4.833646656726456726e-17)
-	};
-	checkCudaErrors(cudaMemcpyToSymbol(d_dd_cos_table, h_cos_table, sizeof(gdd_real)*4));
+	//double h_qnan = std::numeric_limits<double>::quiet_NaN();
+	//checkCudaErrors(cudaMemcpyToSymbolAsync(__h_qnan, &h_qnan, sizeof(double), 0, cudaMemcpyHostToDevice, st_spcl_val));
+
+	//type_trans_dbl trans;
+	//trans.i64_value = (0x7ff0000000000000ULL);	//CUDART_INF
+	//double dd_inf = trans.dbl_value;
+	//checkCudaErrors(cudaMemcpyToSymbolAsync(__dd_inf, &dd_inf, sizeof(double), 0, cudaMemcpyHostToDevice, st_spcl_val));
+
+	//trans.i64_value = (0xfff8000000000000ULL);	//CUDART_NAN
+	//double dd_qnan = trans.dbl_value;
+	//checkCudaErrors(cudaMemcpyToSymbolAsync(__dd_qnan, &dd_qnan, sizeof(double), 0, cudaMemcpyHostToDevice, st_spcl_val));
+
+	cudaStream_t st_spcl_val;
+	cudaStreamCreate(&st_spcl_val);
+
+	double h_special_tbl[2];
+	type_trans_dbl trans;
+	
+	h_special_tbl[0] = std::numeric_limits<double>::infinity();
+	trans.i64_value = (0x7ff0000000000000ULL);	//CUDART_INF
+	h_special_tbl[1] = trans.dbl_value;
+	checkCudaErrors(cudaMemcpyToSymbolAsync(__dd_inf, &h_special_tbl, sizeof(h_special_tbl), 0, cudaMemcpyHostToDevice, st_spcl_val));
+	cudaStreamSynchronize(st_spcl_val);
+
+	h_special_tbl[0] = std::numeric_limits<double>::quiet_NaN();
+	trans.i64_value = (0xfff8000000000000ULL);	//CUDART_NAN
+	h_special_tbl[1] = trans.dbl_value;
+	checkCudaErrors(cudaMemcpyToSymbolAsync(__dd_qnan, &h_special_tbl, sizeof(h_special_tbl), 0, cudaMemcpyHostToDevice, st_spcl_val));
+	cudaStreamSynchronize(st_spcl_val);
+
+
+	//double h_special_tbl[n_dd_special_tbl][2] = {
+	//	{ 0.0,                      1.0                      },		// 0.0,  1.0
+	//	{ 0.0,                      0.0                      },		// h_inf __dd_inf
+	//	{ 0.0,                      0.0                      },		// h_qnan __dd_qnan
+	//	{ 2.718281828459045091e+00, 1.445646891729250158e-16 },		// __dd_e
+	//	{ 6.931471805599452862e-01, 2.319046813846299558e-17 },		// __dd_log2
+	//	{ 2.302585092994045901e+00, -2.170756223382249351e-16 },	// __dd_log10
+	//	{ 6.283185307179586232e+00, 2.449293598294706414e-16 },		// __dd_2pi
+	//	{ 3.141592653589793116e+00, 1.224646799147353207e-16 },		// __dd_pi
+	//	{ 1.570796326794896558e+00, 6.123233995736766036e-17 },		// __dd_pi2
+	//	{ 1.963495408493620697e-01, 7.654042494670957545e-18 },		// __dd_pi16
+	//	{ 7.853981633974482790e-01, 3.061616997868383018e-17 },		// __dd_pi4
+	//	{ 2.356194490192344837e+00, 9.1848509936051484375e-17 },	// __dd_3pi4
+	//};
+	//h_special_tbl[1][0] = std::numeric_limits<double>::infinity();
+	//h_special_tbl[2][0] = std::numeric_limits<double>::quiet_NaN();
+	//type_trans_dbl trans;
+	//trans.i64_value = (0x7ff0000000000000ULL);	//CUDART_INF
+	//h_special_tbl[1][1] = trans.dbl_value;
+	//trans.i64_value = (0xfff8000000000000ULL);	//CUDART_NAN
+	//h_special_tbl[2][1] = trans.dbl_value;
+
+	//checkCudaErrors(cudaMemcpyToSymbolAsync(dd_special_tbl, h_special_tbl, sizeof(h_special_tbl), 0, cudaMemcpyHostToDevice, st_spcl_val));
+
+	//double h_inv_fact[][2] = {
+	//	{ 1.66666666666666657e-01,  9.25185853854297066e-18 },
+	//	{ 4.16666666666666644e-02,  2.31296463463574266e-18 },
+	//	{ 8.33333333333333322e-03,  1.15648231731787138e-19 },
+	//	{ 1.38888888888888894e-03, -5.30054395437357706e-20 },
+	//	{ 1.98412698412698413e-04,  1.72095582934207053e-22 },
+	//	{ 2.48015873015873016e-05,  2.15119478667758816e-23 },
+	//	{ 2.75573192239858925e-06, -1.85839327404647208e-22 },
+	//	{ 2.75573192239858883e-07,  2.37677146222502973e-23 },
+	//	{ 2.50521083854417202e-08, -1.44881407093591197e-24 },
+	//	{ 2.08767569878681002e-09, -1.20734505911325997e-25 },
+	//	{ 1.60590438368216133e-10,  1.25852945887520981e-26 },
+	//	{ 1.14707455977297245e-11,  2.06555127528307454e-28 },
+	//	{ 7.64716373181981641e-13,  7.03872877733453001e-30 },
+	//	{ 4.77947733238738525e-14,  4.39920548583408126e-31 },
+	//	{ 2.81145725434552060e-15,  1.65088427308614326e-31 }
+	//};
+
+	//checkCudaErrors(cudaMemcpyToSymbolAsync(dd_inv_fact, h_inv_fact, sizeof(double) * 2 * n_dd_inv_fact, 0, cudaMemcpyHostToDevice, st_inv));
+
+	//double h_sin_table[][2] = {
+	//	{1.950903220161282758e-01, -7.991079068461731263e-18 },
+	//	{3.826834323650897818e-01, -1.005077269646158761e-17 },
+	//	{5.555702330196021776e-01,  4.709410940561676821e-17 },
+	//	{7.071067811865475727e-01, -4.833646656726456726e-17 }
+	//};
+	//checkCudaErrors(cudaMemcpyToSymbolAsync(d_dd_sin_table, h_sin_table, sizeof(double) * 2 * 4, 0, cudaMemcpyHostToDevice, st_sin_tbl));
+
+	//double h_cos_table[][2] = {
+	//	{9.807852804032304306e-01,  1.854693999782500573e-17 },
+	//	{9.238795325112867385e-01,  1.764504708433667706e-17 },
+	//	{8.314696123025452357e-01,  1.407385698472802389e-18 },
+	//	{7.071067811865475727e-01, -4.833646656726456726e-17 }
+	//};
+	//checkCudaErrors(cudaMemcpyToSymbolAsync(d_dd_cos_table, h_cos_table, sizeof(double) * 2 * 4, 0, cudaMemcpyHostToDevice, st_cos_tbl));
+	
+	//cudaStreamSynchronize(st_spcl_val);
+	//cudaStreamSynchronize(st_inv);
+	//cudaStreamSynchronize(st_sin_tbl);
+	//cudaStreamSynchronize(st_cos_tbl);
+
+	//_dd_e = gdd_real(dev_param[0], dev_param[1]);
+	//cudaFree(dev_param);
+
+	cudaStreamDestroy(st_spcl_val);
+	//cudaStreamDestroy(st_inv);
+	//cudaStreamDestroy(st_sin_tbl);
+	//cudaStreamDestroy(st_cos_tbl);
 
 	printf("\tdone.\n");
 }
 
 void GDDEnd() {
-	printf("GQD turns off...\n");
-	cudaThreadExit();
+	printf("GQD turns off...");
+	cudaDeviceReset();
 	printf("\tdone.\n");
 }
 
 
 void GQDEnd() {
-	printf("GQD turns off...\n");
-	cudaThreadExit();
+	printf("GQD turns off...");
+	cudaDeviceReset();
 	printf("\tdone.\n");
 }
 
@@ -681,6 +776,43 @@ void GQDStart(const int device) {
 	printf("\tdone.\n");
 }
 
+//__host__
+//int convSPValForHost(gdd_real *buff, unsigned int elements){
+//	double h_qnan = std::numeric_limits<double>::quiet_NaN();
+//	double h_inf = std::numeric_limits<double>::infinity();
+//
+//	for (unsigned int i = 0; i < elements; i++){
+//		// transform to hosts qnan if element is gpu_nan
+//		gdd_real t = buff[i];
+//		if (isnan(t)){
+//			buff[i].dd.x = h_qnan;
+//			buff[i].dd.y = h_qnan;
+//		} else if (isinf(t)) {
+//			buff[i].dd.x = h_inf;
+//			buff[i].dd.y = h_inf;
+//		} else {
+//			// nothing to do
+//		}
+//		i++;
+//	}
+//	return 0;
+//}
+//__device__
+//int convSPValFordevice(gdd_real *buff, unsigned int elements){
+//	for (unsigned int i = 0; i < elements; i++) {
+//		// transform to hosts qnan if element is gpu_nan
+//		gdd_real t = buff[i];
+//		if (isnan(t)) {
+//			buff[i] = _dd_qnan;
+//		} else if (isinf(t)) {
+//			buff[i] = _dd_inf;
+//		} else {
+//			// nothing to do
+//		}
+//		i++;
+//	}
+//	return 0;
+//}
 
 #endif /* __GQD_COMMON_CU__ */
 

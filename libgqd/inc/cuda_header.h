@@ -7,7 +7,34 @@
 //#include <sys/time.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <device_launch_parameters.h>
+
+#include <device_functions.h>
+#include <math_constants.h>
+#include <device_double_functions.h>	//CUDART_INF
+
+
 #include <helper_cuda.h>
+#include <helper_functions.h>
+#include <helper_math.h>
+
+//#if __CUDA_ARCH__ >= 200
+////#include <sm_20_atomic_functions.h>
+////#include <sm_20_intrinsics.h>
+//#endif
+//#if __CUDA_ARCH__ >= 300
+////#include <sm_30_intrinsics.h>
+//#endif
+//#if __CUDA_ARCH__ >= 320
+////#include <sm_32_atomic_functions.h>
+////#include <sm_32_intrinsics.h>
+//#endif
+//#if __CUDA_ARCH__ >= 350
+////#include <sm_35_atomic_functions.h>
+////#include <sm_35_intrinsics.h>
+//#endif
+
+
 
 /** for CUDA 2.0 */
 #ifdef CUDA_2
