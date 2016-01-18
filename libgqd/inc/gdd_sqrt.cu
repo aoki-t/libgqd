@@ -21,7 +21,7 @@ gdd_real sqrt(const gdd_real &a) {
 	double x = 1.0 / std::sqrt(a.dd.x);
 	double ax = a.dd.x * x;
 
-	return dd_add(ax, (a - sqr(ax)).dd.x * (x * 0.5));
+	return dd_add(ax, (a - dd_sqr(ax)).dd.x * (x * 0.5));
 	//return a - sqr(ax);
 }
 

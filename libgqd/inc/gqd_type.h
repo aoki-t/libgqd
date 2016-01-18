@@ -1,7 +1,7 @@
 #ifndef __GDD_TYPE_H__
 #define __GDD_TYPE_H__
 
-#include <vector_types.h>
+//#include <vector_types.h>
 
 
 /* compiler switch */
@@ -17,7 +17,7 @@
 /* type definition */
 //typedef double2 gdd_real;
 
-typedef double4 gqd_real;
+//typedef double4 gqd_real;
 
 
 /* initialization functions, these can be called by hosts */

@@ -221,8 +221,8 @@ namespace std {
 		__device__ __inline__ static double min() { return _dd_min_normed; }
 		__device__ __inline__ static gdd_real max() { return _dd_max; }
 		__device__ __inline__ static gdd_real safe_max() { return _dd_safe_max; }
-		__device__ __inline__ static const int digits(){ return 104; }
-		__device__ __inline__ static const int digits10(){ return 31; }
+		__device__ __inline__ static int digits(){ return 104; }
+		__device__ __inline__ static int digits10(){ return 31; }
 		//#define digits    104
 		//#define digits10  31
 	};

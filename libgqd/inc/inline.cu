@@ -9,7 +9,7 @@
 /****************Basic Funcitons *********************/
 
 //computs fl( a + b ) and err( a + b ), assumes |a| > |b|
-__forceinline__ __host__ __device__
+__forceinline__ __device__ __host__
 double quick_two_sum( double a, double b, double &err ) {
 
 	if(b == 0.0) {
@@ -23,7 +23,7 @@ double quick_two_sum( double a, double b, double &err ) {
 	return s;
 }
 
-__forceinline__ __host__ __device__
+__forceinline__ __device__ __host__
 double two_sum( double a, double b, double &err ) {
 
 	if( (a == 0.0) || (b == 0.0) ) {
@@ -40,7 +40,7 @@ double two_sum( double a, double b, double &err ) {
 
 
 //computes fl( a - b ) and err( a - b ), assumes |a| >= |b|
-__forceinline__ __host__ __device__
+__forceinline__ __device__ __host__
 double quick_two_diff( double a, double b, double &err ) {
 	if(a == b) {
 		err = 0.0;
@@ -63,7 +63,7 @@ double quick_two_diff( double a, double b, double &err ) {
 }
 
 //computes fl( a - b ) and err( a - b )
-__forceinline__ __host__ __device__
+__forceinline__ __device__ __host__
 double two_diff( double a, double b, double &err ) {
 	if(a == b) {
 		err = 0.0;
@@ -86,7 +86,7 @@ double two_diff( double a, double b, double &err ) {
 }
 
 // Computes high word and lo word of a 
-__forceinline__ __host__ __device__
+__forceinline__ __device__ __host__
 void split(double a, double &hi, double &lo) {
 	double temp;
 	if (a > _QD_SPLIT_THRESH || a < -_QD_SPLIT_THRESH)
@@ -105,7 +105,7 @@ void split(double a, double &hi, double &lo) {
 }
 
 /* Computes fl(a*b) and err(a*b). */
-__forceinline__  __host__ __device__
+__forceinline__  __device__ __host__
 double two_prod(double a, double b, double &err) {
 #ifdef USE_FMA
 	double p = a * b;
@@ -126,7 +126,7 @@ double two_prod(double a, double b, double &err) {
 }
 
 /* Computes fl(a*a) and err(a*a).  Faster than the above method. */
-__forceinline__ __host__ __device__
+__forceinline__ __device__ __host__
 double two_sqr(double a, double &err) {
 #ifdef USE_FMA
 	double p = a * a;
@@ -143,7 +143,7 @@ double two_sqr(double a, double &err) {
 }
 
 /* Computes the nearest integer to d. */
-__forceinline__ __host__ __device__
+__forceinline__ __device__ __host__
 double nint(double d) {
 	if (d == std::floor(d)){
 		return d;
