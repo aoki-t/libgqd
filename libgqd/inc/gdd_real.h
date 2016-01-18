@@ -35,28 +35,10 @@
 //#define _dd_3pi4	const gdd_real(dd_special_tbl[11][0], dd_special_tbl[11][1])
 
 
-#define _dd_zero	const gdd_real(__dd_zero, __dd_zero)	// 0.0, 0.0
-#define _dd_one		const gdd_real(__dd_one,  __dd_zero)	// 1.0, 0.0
-
-#define _h_inf		const gdd_real( __dd_inf[0],  __dd_inf[0])	// __h_inf,  __h_inf
-#define _h_qnan		const gdd_real(__dd_qnan[0], __dd_qnan[0])	// __h_qnan, __h_qnan
-#define _dd_inf		const gdd_real( __dd_inf[1],  __dd_inf[1])	// dd_inf,  dd_inf
-#define _dd_qnan	const gdd_real(__dd_qnan[1], __dd_qnan[1])	// dd_qnan, dd_qnan
-
-
-#define _dd_e		const gdd_real(    __dd_e[0],     __dd_e[1])
-#define _dd_log2	const gdd_real( __dd_log2[0],  __dd_log2[1])
-#define _dd_log10	const gdd_real(__dd_log10[0], __dd_log10[1])
-#define _dd_2pi		const gdd_real(  __dd_2pi[0],   __dd_2pi[1])
-#define _dd_pi		const gdd_real(   __dd_pi[0],    __dd_pi[1])
-#define _dd_pi2		const gdd_real(  __dd_pi2[0],   __dd_pi2[1])
-#define _dd_pi16	const gdd_real( __dd_pi16[0],  __dd_pi16[1])
-#define _dd_pi4		const gdd_real(  __dd_pi4[0],   __dd_pi4[1])
-#define _dd_3pi4	const gdd_real( __dd_3pi4[0],  __dd_3pi4[1])
 
 
 #define _dd_max         const gdd_real(1.79769313486231570815e+308, 9.97920154767359795037e+291)
-#define _dd_safe_max    const gdd_real(1.7976931080746007281e+308, 9.97920154767359795037e+291)
+#define _dd_safe_max    const gdd_real(1.7976931080746007281e+308,  9.97920154767359795037e+291)
 #define _dd_min_normed  (2.0041683600089728e-292)  // = 2^(-1022 + 53)
 #define _dd_digits      (31)
 
@@ -76,6 +58,25 @@ __device__ __constant__ double   __dd_pi2[2] = { 1.570796326794896558e+00, 6.123
 __device__ __constant__ double  __dd_pi16[2] = { 1.963495408493620697e-01, 7.654042494670957545e-18 };		// __dd_pi16
 __device__ __constant__ double   __dd_pi4[2] = { 7.853981633974482790e-01, 3.061616997868383018e-17 };		// __dd_pi4
 __device__ __constant__ double  __dd_3pi4[2] = { 2.356194490192344837e+00, 9.1848509936051484375e-17 };		// __dd_3pi4
+
+
+#define _dd_zero	const gdd_real(__dd_zero, __dd_zero)	// 0.0, 0.0
+#define _dd_one		const gdd_real(__dd_one,  __dd_zero)	// 1.0, 0.0
+
+#define _h_inf		const gdd_real( __dd_inf[0],  __dd_inf[0])	// __h_inf,  __h_inf
+#define _h_qnan		const gdd_real(__dd_qnan[0], __dd_qnan[0])	// __h_qnan, __h_qnan
+#define _dd_inf		const gdd_real( __dd_inf[1],  __dd_inf[1])	// dd_inf,  dd_inf
+#define _dd_qnan	const gdd_real(__dd_qnan[1], __dd_qnan[1])	// dd_qnan, dd_qnan
+
+#define _dd_e		const gdd_real(    __dd_e[0],     __dd_e[1])
+#define _dd_log2	const gdd_real( __dd_log2[0],  __dd_log2[1])
+#define _dd_log10	const gdd_real(__dd_log10[0], __dd_log10[1])
+#define _dd_2pi		const gdd_real(  __dd_2pi[0],   __dd_2pi[1])
+#define _dd_pi		const gdd_real(   __dd_pi[0],    __dd_pi[1])
+#define _dd_pi2		const gdd_real(  __dd_pi2[0],   __dd_pi2[1])
+#define _dd_pi16	const gdd_real( __dd_pi16[0],  __dd_pi16[1])
+#define _dd_pi4		const gdd_real(  __dd_pi4[0],   __dd_pi4[1])
+#define _dd_3pi4	const gdd_real( __dd_3pi4[0],  __dd_3pi4[1])
 
 
 /* data in the constant memory */
