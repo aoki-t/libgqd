@@ -115,8 +115,8 @@ gdd_real sin(const gdd_real &a) {
 		}
 	}
 
-	gdd_real u(d_dd_cos_table[abs_k - 1][0], d_dd_cos_table[abs_k - 1][1]);
-	gdd_real v(d_dd_sin_table[abs_k - 1][0], d_dd_sin_table[abs_k - 1][0]);
+	gdd_real u(dd_cos_table[abs_k - 1][0], dd_cos_table[abs_k - 1][1]);
+	gdd_real v(dd_sin_table[abs_k - 1][0], dd_sin_table[abs_k - 1][0]);
 	gdd_real sin_t, cos_t;
 	sincos_taylor(t, sin_t, cos_t);
 	if (j == 0) {
@@ -198,8 +198,8 @@ gdd_real cos(const gdd_real &a) {
 
 	gdd_real sin_t, cos_t;
 	sincos_taylor(t, sin_t, cos_t);
-	gdd_real u(d_dd_cos_table[abs_k - 1][0], d_dd_cos_table[abs_k - 1][1]);
-	gdd_real v(d_dd_sin_table[abs_k - 1][0], d_dd_sin_table[abs_k - 1][0]);
+	gdd_real u(dd_cos_table[abs_k - 1][0], dd_cos_table[abs_k - 1][1]);
+	gdd_real v(dd_sin_table[abs_k - 1][0], dd_sin_table[abs_k - 1][0]);
 
 	if (j == 0) {
 		if (k > 0) {
@@ -278,8 +278,8 @@ void sincos(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a) {
 		s = sin_t;
 		c = cos_t;
 	} else {
-		gdd_real u(d_dd_cos_table[abs_k - 1][0], d_dd_cos_table[abs_k - 1][1]);
-		gdd_real v(d_dd_sin_table[abs_k - 1][0], d_dd_sin_table[abs_k - 1][0]);
+		gdd_real u(dd_cos_table[abs_k - 1][0], dd_cos_table[abs_k - 1][1]);
+		gdd_real v(dd_sin_table[abs_k - 1][0], dd_sin_table[abs_k - 1][0]);
 
 		if (k > 0) {
 			s = u * sin_t + v * cos_t;

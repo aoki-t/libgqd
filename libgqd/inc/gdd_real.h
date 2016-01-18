@@ -64,8 +64,8 @@ __device__ __constant__ double _dd_eps = (4.93038065763132e-32);
 
 __device__ __constant__ double __dd_zero = 0.0;
 __device__ __constant__ double __dd_one  = 1.0;
-__device__ __constant__ double  __dd_inf[2];	// CUDART_INF;
-__device__ __constant__ double __dd_qnan[2];	// CUDART_NAN;
+__device__ __constant__ double  __dd_inf[2];	// h_inf, CUDART_INF;
+__device__ __constant__ double __dd_qnan[2];	// h_qnan, CUDART_NAN;
 
 __device__ __constant__ double     __dd_e[2] = { 2.718281828459045091e+00, 1.445646891729250158e-16 };		// __dd_e
 __device__ __constant__ double  __dd_log2[2] = { 6.931471805599452862e-01, 2.319046813846299558e-17 };		// __dd_log2
@@ -98,14 +98,14 @@ __device__ __constant__ double dd_inv_fact[n_dd_inv_fact][2] = {
 	{ 2.81145725434552060e-15,  1.65088427308614326e-31 }
 };
 
-__device__ __constant__ double d_dd_sin_table[4][2] = {
+__device__ __constant__ double dd_sin_table[4][2] = {
 	{ 1.950903220161282758e-01, -7.991079068461731263e-18 },
 	{ 3.826834323650897818e-01, -1.005077269646158761e-17 },
 	{ 5.555702330196021776e-01,  4.709410940561676821e-17 },
 	{ 7.071067811865475727e-01, -4.833646656726456726e-17 }
 };
 
-__device__ __constant__ double d_dd_cos_table[4][2] = {
+__device__ __constant__ double dd_cos_table[4][2] = {
 	{ 9.807852804032304306e-01,  1.854693999782500573e-17 },
 	{ 9.238795325112867385e-01,  1.764504708433667706e-17 },
 	{ 8.314696123025452357e-01,  1.407385698472802389e-18 },
@@ -221,8 +221,8 @@ namespace std {
 		__device__ __inline__ static double min() { return _dd_min_normed; }
 		__device__ __inline__ static gdd_real max() { return _dd_max; }
 		__device__ __inline__ static gdd_real safe_max() { return _dd_safe_max; }
-		__device__ __inline__ static int digits(){ return 104; }
-		__device__ __inline__ static int digits10(){ return 31; }
+		__device__ __inline__ static const int digits(){ return 104; }
+		__device__ __inline__ static const int digits10(){ return 31; }
 		//#define digits    104
 		//#define digits10  31
 	};
