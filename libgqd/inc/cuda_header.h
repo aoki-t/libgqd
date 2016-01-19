@@ -33,7 +33,12 @@
 ////#include <sm_35_atomic_functions.h>
 ////#include <sm_35_intrinsics.h>
 //#endif
-
+#if (defined(CUDART_VERSION)) &&  CUDART_VERSION < 5000
+#error CUDA Tookkit 5.0 or later needed.
+#endif
+#if (defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 200)
+#error Conpute Capability 2.0 or later needed
+#endif
 
 
 /** for CUDA 2.0 */
