@@ -9,7 +9,7 @@
 __device__
 gdd_real sqrt(const gdd_real &a) {
 	if (is_zero(a)) {
-		return 0.0;
+		return _dd_zero;
 	}
 
 	//TODO: should make an error
@@ -64,7 +64,7 @@ gdd_real nroot(const gdd_real &a, int n) {
 	}
 
 	if (is_zero(a)){
-		return 0.0;
+		return _dd_zero;
 	}
 
 	/* Note  a^{-1/n} = exp(-log(a)/n) */

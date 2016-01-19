@@ -13,7 +13,7 @@ gdd_real sin_taylor(const gdd_real &a) {
 	gdd_real r, s, t, x;
 
 	if (is_zero(a)) {
-		return 0.0;
+		return _dd_zero;
 	}
 
 	int i = 0;

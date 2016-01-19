@@ -16,7 +16,7 @@ gdd_real exp(const gdd_real &a) {
 	const double inv_k = 1.0 / k;
 
 	if (a.dd.x <= -709.0){
-		return 0.0;
+		return _dd_zero;
 	}
 
 	if (a.dd.x >= 709.0){
