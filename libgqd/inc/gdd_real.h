@@ -11,37 +11,7 @@
 
 
 
-
-
 /* constants */
-//#define n_dd_special_tbl	(12)
-//__device__ __constant__ double dd_special_tbl[n_dd_special_tbl][2];
-//#define _dd_zero	const gdd_real(dd_special_tbl[ 0][0], dd_special_tbl[ 0][0])	// 0.0, 0.0
-//#define _dd_one		const gdd_real(dd_special_tbl[ 0][1], dd_special_tbl[ 0][0])	// 1.0, 0.0
-//#define _dd_inf		const gdd_real(dd_special_tbl[ 1][1], dd_special_tbl[ 1][1])	// dd_inf,  dd_inf
-//#define _dd_qnan	const gdd_real(dd_special_tbl[ 2][1], dd_special_tbl[ 2][1])	// dd_qnan, dd_qnan
-//
-//#define _h_inf		const gdd_real(dd_special_tbl[ 1][0], dd_special_tbl[ 1][0])	// __h_inf,  __h_inf
-//#define _h_qnan		const gdd_real(dd_special_tbl[ 2][0], dd_special_tbl[ 2][0])	// __h_qnan, __h_qnan
-//
-//#define _dd_e		const gdd_real(dd_special_tbl[ 3][0], dd_special_tbl[ 3][1])
-//#define _dd_log2	const gdd_real(dd_special_tbl[ 4][0], dd_special_tbl[ 4][1])
-//#define _dd_log10	const gdd_real(dd_special_tbl[ 5][0], dd_special_tbl[ 5][1])
-//#define _dd_2pi		const gdd_real(dd_special_tbl[ 6][0], dd_special_tbl[ 6][1])
-//#define _dd_pi		const gdd_real(dd_special_tbl[ 7][0], dd_special_tbl[ 7][1])
-//#define _dd_pi2		const gdd_real(dd_special_tbl[ 8][0], dd_special_tbl[ 8][1])
-//#define _dd_pi16	const gdd_real(dd_special_tbl[ 9][0], dd_special_tbl[ 9][1])
-//#define _dd_pi4		const gdd_real(dd_special_tbl[10][0], dd_special_tbl[10][1])
-//#define _dd_3pi4	const gdd_real(dd_special_tbl[11][0], dd_special_tbl[11][1])
-
-
-
-
-#define _dd_max         const gdd_real(1.79769313486231570815e+308, 9.97920154767359795037e+291)
-#define _dd_safe_max    const gdd_real(1.7976931080746007281e+308,  9.97920154767359795037e+291)
-#define _dd_min_normed  (2.0041683600089728e-292)  // = 2^(-1022 + 53)
-#define _dd_digits      (31)
-
 __device__ __constant__ double _dd_eps = (4.93038065763132e-32);
 
 __device__ __constant__ double __dd_zero = 0.0;
@@ -77,6 +47,12 @@ __device__ __constant__ double  __dd_3pi4[2] = { 2.356194490192344837e+00, 9.184
 #define _dd_pi16	const gdd_real( __dd_pi16[0],  __dd_pi16[1])
 #define _dd_pi4		const gdd_real(  __dd_pi4[0],   __dd_pi4[1])
 #define _dd_3pi4	const gdd_real( __dd_3pi4[0],  __dd_3pi4[1])
+
+#define _dd_max         const gdd_real(1.79769313486231570815e+308, 9.97920154767359795037e+291)
+#define _dd_safe_max    const gdd_real(1.7976931080746007281e+308,  9.97920154767359795037e+291)
+#define _dd_min_normed  (2.0041683600089728e-292)  // = 2^(-1022 + 53)
+#define _dd_digits      (31)
+
 
 
 /* data in the constant memory */
