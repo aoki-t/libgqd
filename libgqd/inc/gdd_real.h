@@ -1,6 +1,8 @@
 #ifndef __GDD_REAL_H__
 #define __GDD_REAL_H__
 
+#define USE_FMA 1
+
 #include <iostream>
 #include <cmath>
 #include <limits.h>
@@ -8,6 +10,7 @@
 #include <vector_types.h>
 
 #include "cuda_header.h"
+#include "inline.cu"
 
 
 
@@ -33,8 +36,8 @@ __device__ __constant__ double  __dd_3pi4[2] = { 2.356194490192344837e+00, 9.184
 #define _dd_zero	const gdd_real(__dd_zero, __dd_zero)	// 0.0, 0.0
 #define _dd_one		const gdd_real(__dd_one,  __dd_zero)	// 1.0, 0.0
 
-#define _h_inf		const gdd_real( __dd_inf[0],  __dd_inf[0])	// __h_inf,  __h_inf
-#define _h_qnan		const gdd_real(__dd_qnan[0], __dd_qnan[0])	// __h_qnan, __h_qnan
+#define _dh_inf		const gdd_real( __dd_inf[0],  __dd_inf[0])	// __h_inf,  __h_inf
+#define _dh_qnan	const gdd_real(__dd_qnan[0], __dd_qnan[0])	// __h_qnan, __h_qnan
 #define _dd_inf		const gdd_real( __dd_inf[1],  __dd_inf[1])	// dd_inf,  dd_inf
 #define _dd_qnan	const gdd_real(__dd_qnan[1], __dd_qnan[1])	// dd_qnan, dd_qnan
 
@@ -89,58 +92,27 @@ __device__ __constant__ double dd_cos_table[4][2] = {
 	{ 7.071067811865475727e-01, -4.833646656726456726e-17 }
 };
 
+class gqd_real;	// for friend declaration
 
 
 class gdd_real {
 private:
-	//double2 dd;
+	double2 dd;
 	__device__ gdd_real operator^(const double n);
 public:
-	double2 dd;
+	//double2 dd;
 
 	//default constructor
-	__device__ __host__
-	gdd_real()
-		:dd({ 0.0, 0.0 }){}
-
-	//destructor
-	__device__ __host__
-	~gdd_real(){}
-
-	__device__ __host__
-	gdd_real(double hi, double lo){
-		dd.x = hi;
-		dd.y = lo;
-	}
-
-	__device__ __host__
-	explicit gdd_real(double d){
-		dd.x = d;
-		dd.y = 0.0;
-	}
-
-	__device__ __host__
-	gdd_real(int i) {
-		dd.x = (static_cast<double>(i));
-		dd.y = 0.0;
-	}
-
-	__device__ __host__
-	gdd_real(const char *s);
-
-	__device__ __host__
-	explicit gdd_real(const double *d) {
-		dd.x = d[0];
-		dd.y = d[1];
-	}
+	__device__ __host__	gdd_real();
+	__device__ __host__	gdd_real(double hi, double lo);
+	__device__ __host__	explicit gdd_real(double d);
+	__device__ __host__	explicit gdd_real(int i);
+	__device__ __host__	explicit gdd_real(const double *d);
 
 	// copy constructor
-	__device__ __host__
-	gdd_real(const gdd_real &a){
-		dd.x = a.dd.x;
-		dd.y = a.dd.y;
-	}
-
+	__device__ __host__	gdd_real(const gdd_real &a);
+	//destructor
+	__device__ __host__	~gdd_real();
 
 	static void error(const char *msg);
 
@@ -186,6 +158,64 @@ public:
 
 	__device__ __host__ static gdd_real rand(void);
 	__device__ __host__ static gdd_real debug_rand(void);
+
+	friend __device__ __host__ gdd_real negative(const gdd_real &a);
+	friend __device__ __host__	gdd_real operator+(const gdd_real &a, const double b);
+	friend __forceinline__ __device__ __host__	gdd_real ieee_add(const gdd_real &a, const gdd_real &b);
+	friend __forceinline__ __device__ __host__	gdd_real sloppy_add(const gdd_real &a, const gdd_real &b);
+	friend __device__ __host__ gdd_real operator-(const gdd_real &a, const gdd_real &b);
+	friend __device__ __host__ gdd_real operator-(const gdd_real &a, double b);
+	friend __device__ __host__ gdd_real operator-(double a, const gdd_real &b);
+	friend __device__ __host__ gdd_real sqr(const gdd_real &a);
+	friend __device__ __host__ gdd_real ldexp(const gdd_real &a, int exp);
+	friend __device__ __host__ gdd_real mul_pwr2(const gdd_real &a, double b);
+	friend __device__ __host__	gdd_real operator*(const gdd_real &a, const gdd_real &b);
+	friend __device__ __host__	gdd_real operator*(const gdd_real &a, double b);
+	friend __forceinline__ __device__ __host__	gdd_real accurate_div(const gdd_real &a, const gdd_real &b);
+	friend __forceinline__ __device__ __host__	gdd_real sloppy_div(const gdd_real &a, const gdd_real &b);
+	friend __device__ __host__	gdd_real operator/(const gdd_real &a, double b);
+	friend __device__ bool is_zero(const gdd_real &a);
+	friend __device__ bool is_one(const gdd_real &a);
+	friend __device__ bool is_positive(const gdd_real &a);
+	friend __device__ bool is_negative(const gdd_real &a);
+	friend __device__ bool isnan(const gdd_real &a);
+	friend __device__ bool isfinite(const gdd_real &a);
+	friend __device__ bool isinf(const gdd_real &a);
+	friend __device__ __host__	double to_double(const gdd_real &a);
+	friend __device__ __host__ int to_int(const gdd_real &a);
+	friend __device__ __host__ bool operator==(const gdd_real &a, double b);
+	friend __device__ __host__ bool operator==(double a, const gdd_real &b);
+	friend __device__ __host__ bool operator==(const gdd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator<=(const gdd_real &a, double b);
+	friend __device__ __host__ bool operator<=(const gdd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator>=(const gdd_real &a, double b);
+	friend __device__ __host__ bool operator>=(const gdd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator<(const gdd_real &a, double b);
+	friend __device__ __host__ bool operator<(double a, const gdd_real &b);
+	friend __device__ __host__ bool operator<(const gdd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator>(const gdd_real &a, double b);
+	friend __device__ __host__ bool operator>(double a, const gdd_real &b);
+	friend __device__ __host__ bool operator>(const gdd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator!=(const gdd_real &a, double b);
+	friend __device__ __host__ bool operator!=(double a, const gdd_real &b);
+	friend __device__ __host__ bool operator!=(const gdd_real &a, const gdd_real &b);
+	friend __device__ gdd_real aint(const gdd_real &a);
+	friend __device__ gdd_real nint(const gdd_real &a);
+	friend __device__ gdd_real floor(const gdd_real &a);
+	friend __device__ gdd_real ceil(const gdd_real &a);
+	friend __device__ __host__ gdd_real abs(const gdd_real &a);
+	friend __device__ gdd_real sqrt(const gdd_real &a);
+	friend __device__ gdd_real nroot(const gdd_real &a, int n);
+	friend __device__ gdd_real exp(const gdd_real &a);
+	friend __device__ gdd_real log(const gdd_real &a);
+	friend __device__ void sincos_taylor(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a);
+	friend __device__ gdd_real sin(const gdd_real &a);
+	friend __device__ gdd_real cos(const gdd_real &a);
+	friend __device__ void sincos(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a);
+	friend __device__ gdd_real atan2(const gdd_real &y, const gdd_real &x);
+
+	//friend __device__ __host__ gqd_real::gqd_real(const gdd_real &a);
+	friend gqd_real;
 
 };
 
@@ -264,9 +294,9 @@ __device__ bool is_zero(const gdd_real &a);
 __device__ bool is_one(const gdd_real &a);
 __device__ bool is_positive(const gdd_real &a);
 __device__ bool is_negative(const gdd_real &a);
-__device__ __host__ bool isnan(const gdd_real &a);
-__device__ __host__ bool isfinite(const gdd_real &a);
-__device__ __host__ bool isinf(const gdd_real &a);
+__device__ bool isnan(const gdd_real &a);
+__device__ bool isfinite(const gdd_real &a);
+__device__ bool isinf(const gdd_real &a);
 
 __device__ __host__ double to_double(const gdd_real &a);
 __device__ __host__ int    to_int(const gdd_real &a);

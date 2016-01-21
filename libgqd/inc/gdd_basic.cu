@@ -21,6 +21,49 @@
 
 //#include "common.cu"
 
+///////////////////// Constructor /////////////////////
+
+//default constructor
+__device__ __host__
+gdd_real::gdd_real()
+:dd({ 0.0, 0.0 }){}
+
+
+__device__ __host__
+gdd_real::gdd_real(double hi, double lo){
+	dd.x = hi;
+	dd.y = lo;
+}
+
+__device__ __host__
+gdd_real::gdd_real(double d){
+	dd.x = d;
+	dd.y = 0.0;
+}
+
+__device__ __host__
+gdd_real::gdd_real(int i) {
+	dd.x = (static_cast<double>(i));
+	dd.y = 0.0;
+}
+
+
+__device__ __host__
+gdd_real::gdd_real(const double *d) {
+	dd.x = d[0];
+	dd.y = d[1];
+}
+
+// copy constructor
+__device__ __host__
+gdd_real::gdd_real(const gdd_real &a){
+	dd.x = a.dd.x;
+	dd.y = a.dd.y;
+}
+
+//destructor
+__device__ __host__
+gdd_real::~gdd_real(){}
 
 
 ///////////////////// Asign /////////////////////
