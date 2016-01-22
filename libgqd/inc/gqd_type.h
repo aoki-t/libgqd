@@ -12,7 +12,18 @@
  * e.g., several hours
  * */
 #define ALL_MATH 1
+/*
+	MATH_TYPE
+		BASIC: basic, log, exp, pow, sqrt, nroot
+		ALL: basic + sin, cos, tan
 
+	MEMORY
+		FULL : All Table impl
+		SMALL: Only sin Table impl
+
+
+
+*/
 
 /* type definition */
 //typedef double2 gdd_real;
