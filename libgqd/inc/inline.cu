@@ -47,17 +47,7 @@ double quick_two_diff( double a, double b, double &err ) {
 		return 0.0;
 	}
 
-	double s;
-
-	/*
-	if(fabs((a-b)/a) < GPU_D_EPS) {
-		s = 0.0;
-		err = 0.0;
-		return s;
-	}
-	*/
-
-	s = a - b;
+	double s = a - b;
 	err = (a - s) - b;
 	return s;
 }
@@ -71,15 +61,6 @@ double two_diff( double a, double b, double &err ) {
 	}
 
 	double s = a - b;
-	
-	/*
-	if(fabs((a-b)/a) < GPU_D_EPS) {
-		s = 0.0;
-		err = 0.0;
-		return s;
-	}
-	*/	
-
 	double bb = s - a;
 	err = (a - (s - bb)) - (b + bb);
 	return s;
