@@ -9,13 +9,24 @@
    This is a natural logarithm (i.e., base e).            */
 __device__
 gdd_real log(const gdd_real &a) {
+	if (isnan(a)) {
+		return _dd_qnan;
+	}
 
 	if (is_one(a)) {	
 		return _dd_zero;
 	}
 
-	if (a.dd.x <= 0.0) {
+	if (is_zero(a)) {
+		return negative(_dd_inf);
+	}
+
+	if (is_negative(a)) {
 		return _dd_qnan;
+	}
+
+	if (is_pinf(a)) {
+		return _dd_inf;
 	}
 
 	gdd_real x(std::log(a.dd.x));   // Initial approximation 

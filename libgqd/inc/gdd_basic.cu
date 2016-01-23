@@ -21,6 +21,24 @@
 
 //#include "common.cu"
 
+__device__ __constant__ double _dd_eps = (4.93038065763132e-32);
+
+__device__ __constant__ double __dd_zero = 0.0;
+__device__ __constant__ double __dd_one = 1.0;
+__device__ __constant__ double  __dd_inf[2];	// h_inf, CUDART_INF;
+__device__ __constant__ double __dd_qnan[2];	// h_qnan, CUDART_NAN;
+
+__device__ __constant__ double     __dd_e[2] = { 2.718281828459045091e+00, 1.445646891729250158e-16 };		// __dd_e
+__device__ __constant__ double  __dd_log2[2] = { 6.931471805599452862e-01, 2.319046813846299558e-17 };		// __dd_log2
+__device__ __constant__ double __dd_log10[2] = { 2.302585092994045901e+00, -2.170756223382249351e-16 };		// __dd_log10
+__device__ __constant__ double   __dd_2pi[2] = { 6.283185307179586232e+00, 2.449293598294706414e-16 };		// __dd_2pi
+__device__ __constant__ double    __dd_pi[2] = { 3.141592653589793116e+00, 1.224646799147353207e-16 };		// __dd_pi
+__device__ __constant__ double   __dd_pi2[2] = { 1.570796326794896558e+00, 6.123233995736766036e-17 };		// __dd_pi2
+__device__ __constant__ double  __dd_pi16[2] = { 1.963495408493620697e-01, 7.654042494670957545e-18 };		// __dd_pi16
+__device__ __constant__ double   __dd_pi4[2] = { 7.853981633974482790e-01, 3.061616997868383018e-17 };		// __dd_pi4
+__device__ __constant__ double  __dd_3pi4[2] = { 2.356194490192344837e+00, 9.1848509936051484375e-17 };		// __dd_3pi4
+
+
 ///////////////////// Constructor /////////////////////
 
 //default constructor
@@ -518,12 +536,22 @@ bool isnan(const gdd_real &a) {
 }
 __device__
 bool isfinite(const gdd_real &a) {
-	// Not infinity and NaN
+	// Not infinity and not NaN
 	return isfinite(a.dd.x);
 }
 __device__
 bool isinf(const gdd_real &a) {
 	return isinf(a.dd.x);
+}
+
+__device__
+bool is_pinf(const gdd_real &a) {
+	return (a.dd.x == CUDART_INF);
+}
+
+__device__
+bool is_ninf(const gdd_real &a) {
+	return (a.dd.x == -CUDART_INF);
 }
 
 

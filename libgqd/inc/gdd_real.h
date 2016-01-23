@@ -15,23 +15,39 @@
 
 
 /* constants */
-__device__ __constant__ double _dd_eps = (4.93038065763132e-32);
+//__device__ __constant__ double _dd_eps = (4.93038065763132e-32);
+//
+//__device__ __constant__ double __dd_zero = 0.0;
+//__device__ __constant__ double __dd_one  = 1.0;
+//__device__ __constant__ double  __dd_inf[2];	// h_inf, CUDART_INF;
+//__device__ __constant__ double __dd_qnan[2];	// h_qnan, CUDART_NAN;
+//
+//__device__ __constant__ double     __dd_e[2] = { 2.718281828459045091e+00, 1.445646891729250158e-16 };		// __dd_e
+//__device__ __constant__ double  __dd_log2[2] = { 6.931471805599452862e-01, 2.319046813846299558e-17 };		// __dd_log2
+//__device__ __constant__ double __dd_log10[2] = { 2.302585092994045901e+00, -2.170756223382249351e-16 };		// __dd_log10
+//__device__ __constant__ double   __dd_2pi[2] = { 6.283185307179586232e+00, 2.449293598294706414e-16 };		// __dd_2pi
+//__device__ __constant__ double    __dd_pi[2] = { 3.141592653589793116e+00, 1.224646799147353207e-16 };		// __dd_pi
+//__device__ __constant__ double   __dd_pi2[2] = { 1.570796326794896558e+00, 6.123233995736766036e-17 };		// __dd_pi2
+//__device__ __constant__ double  __dd_pi16[2] = { 1.963495408493620697e-01, 7.654042494670957545e-18 };		// __dd_pi16
+//__device__ __constant__ double   __dd_pi4[2] = { 7.853981633974482790e-01, 3.061616997868383018e-17 };		// __dd_pi4
+//__device__ __constant__ double  __dd_3pi4[2] = { 2.356194490192344837e+00, 9.1848509936051484375e-17 };		// __dd_3pi4
 
-__device__ __constant__ double __dd_zero = 0.0;
-__device__ __constant__ double __dd_one  = 1.0;
-__device__ __constant__ double  __dd_inf[2];	// h_inf, CUDART_INF;
-__device__ __constant__ double __dd_qnan[2];	// h_qnan, CUDART_NAN;
+extern __device__ __constant__ double _dd_eps;
 
-__device__ __constant__ double     __dd_e[2] = { 2.718281828459045091e+00, 1.445646891729250158e-16 };		// __dd_e
-__device__ __constant__ double  __dd_log2[2] = { 6.931471805599452862e-01, 2.319046813846299558e-17 };		// __dd_log2
-__device__ __constant__ double __dd_log10[2] = { 2.302585092994045901e+00, -2.170756223382249351e-16 };		// __dd_log10
-__device__ __constant__ double   __dd_2pi[2] = { 6.283185307179586232e+00, 2.449293598294706414e-16 };		// __dd_2pi
-__device__ __constant__ double    __dd_pi[2] = { 3.141592653589793116e+00, 1.224646799147353207e-16 };		// __dd_pi
-__device__ __constant__ double   __dd_pi2[2] = { 1.570796326794896558e+00, 6.123233995736766036e-17 };		// __dd_pi2
-__device__ __constant__ double  __dd_pi16[2] = { 1.963495408493620697e-01, 7.654042494670957545e-18 };		// __dd_pi16
-__device__ __constant__ double   __dd_pi4[2] = { 7.853981633974482790e-01, 3.061616997868383018e-17 };		// __dd_pi4
-__device__ __constant__ double  __dd_3pi4[2] = { 2.356194490192344837e+00, 9.1848509936051484375e-17 };		// __dd_3pi4
+extern __device__ __constant__ double __dd_zero;
+extern __device__ __constant__ double __dd_one;
+extern __device__ __constant__ double  __dd_inf[2];	// h_inf, CUDART_INF;
+extern __device__ __constant__ double __dd_qnan[2];	// h_qnan, CUDART_NAN;
 
+extern __device__ __constant__ double     __dd_e[2];
+extern __device__ __constant__ double  __dd_log2[2];
+extern __device__ __constant__ double __dd_log10[2];
+extern __device__ __constant__ double   __dd_2pi[2];
+extern __device__ __constant__ double    __dd_pi[2];
+extern __device__ __constant__ double   __dd_pi2[2];
+extern __device__ __constant__ double  __dd_pi16[2];
+extern __device__ __constant__ double   __dd_pi4[2];
+extern __device__ __constant__ double  __dd_3pi4[2];
 
 #define _dd_zero	const gdd_real(__dd_zero, __dd_zero)	// 0.0, 0.0
 #define _dd_one		const gdd_real(__dd_one,  __dd_zero)	// 1.0, 0.0
@@ -60,52 +76,52 @@ __device__ __constant__ double  __dd_3pi4[2] = { 2.356194490192344837e+00, 9.184
 
 /* data in the constant memory */
 #define n_dd_inv_fact (15)
-__device__ __constant__ double dd_inv_fact[n_dd_inv_fact][2] = {
-	{ 1.66666666666666657e-01,  9.25185853854297066e-18 },
-	{ 4.16666666666666644e-02,  2.31296463463574266e-18 },
-	{ 8.33333333333333322e-03,  1.15648231731787138e-19 },
-	{ 1.38888888888888894e-03, -5.30054395437357706e-20 },
-	{ 1.98412698412698413e-04,  1.72095582934207053e-22 },
-	{ 2.48015873015873016e-05,  2.15119478667758816e-23 },
-	{ 2.75573192239858925e-06, -1.85839327404647208e-22 },
-	{ 2.75573192239858883e-07,  2.37677146222502973e-23 },
-	{ 2.50521083854417202e-08, -1.44881407093591197e-24 },
-	{ 2.08767569878681002e-09, -1.20734505911325997e-25 },
-	{ 1.60590438368216133e-10,  1.25852945887520981e-26 },
-	{ 1.14707455977297245e-11,  2.06555127528307454e-28 },
-	{ 7.64716373181981641e-13,  7.03872877733453001e-30 },
-	{ 4.77947733238738525e-14,  4.39920548583408126e-31 },
-	{ 2.81145725434552060e-15,  1.65088427308614326e-31 }
-};
+//__device__ __constant__ double dd_inv_fact[n_dd_inv_fact][2] = {
+//	{ 1.66666666666666657e-01,  9.25185853854297066e-18 },
+//	{ 4.16666666666666644e-02,  2.31296463463574266e-18 },
+//	{ 8.33333333333333322e-03,  1.15648231731787138e-19 },
+//	{ 1.38888888888888894e-03, -5.30054395437357706e-20 },
+//	{ 1.98412698412698413e-04,  1.72095582934207053e-22 },
+//	{ 2.48015873015873016e-05,  2.15119478667758816e-23 },
+//	{ 2.75573192239858925e-06, -1.85839327404647208e-22 },
+//	{ 2.75573192239858883e-07,  2.37677146222502973e-23 },
+//	{ 2.50521083854417202e-08, -1.44881407093591197e-24 },
+//	{ 2.08767569878681002e-09, -1.20734505911325997e-25 },
+//	{ 1.60590438368216133e-10,  1.25852945887520981e-26 },
+//	{ 1.14707455977297245e-11,  2.06555127528307454e-28 },
+//	{ 7.64716373181981641e-13,  7.03872877733453001e-30 },
+//	{ 4.77947733238738525e-14,  4.39920548583408126e-31 },
+//	{ 2.81145725434552060e-15,  1.65088427308614326e-31 }
+//};
 
-__device__ __constant__ double dd_sin_table[4][2] = {
-	{ 1.950903220161282758e-01, -7.991079068461731263e-18 },
-	{ 3.826834323650897818e-01, -1.005077269646158761e-17 },
-	{ 5.555702330196021776e-01,  4.709410940561676821e-17 },
-	{ 7.071067811865475727e-01, -4.833646656726456726e-17 }
-};
+//__device__ __constant__ double dd_sin_table[4][2] = {
+//	{ 1.950903220161282758e-01, -7.991079068461731263e-18 },
+//	{ 3.826834323650897818e-01, -1.005077269646158761e-17 },
+//	{ 5.555702330196021776e-01,  4.709410940561676821e-17 },
+//	{ 7.071067811865475727e-01, -4.833646656726456726e-17 }
+//};
 
-__device__ __constant__ double dd_cos_table[4][2] = {
-	{ 9.807852804032304306e-01,  1.854693999782500573e-17 },
-	{ 9.238795325112867385e-01,  1.764504708433667706e-17 },
-	{ 8.314696123025452357e-01,  1.407385698472802389e-18 },
-	{ 7.071067811865475727e-01, -4.833646656726456726e-17 }
-};
+//__device__ __constant__ double dd_cos_table[4][2] = {
+//	{ 9.807852804032304306e-01,  1.854693999782500573e-17 },
+//	{ 9.238795325112867385e-01,  1.764504708433667706e-17 },
+//	{ 8.314696123025452357e-01,  1.407385698472802389e-18 },
+//	{ 7.071067811865475727e-01, -4.833646656726456726e-17 }
+//};
 
 class gqd_real;	// for friend declaration
 
 
 class gdd_real {
 private:
-	double2 dd;
+	//double2 dd;
 	__device__ gdd_real operator^(const double n);
 public:
-	//double2 dd;
+	double2 dd;
 
 	//default constructor
 	__device__ __host__	gdd_real();
 	__device__ __host__	gdd_real(double hi, double lo);
-	__device__ __host__	explicit gdd_real(double d);
+	__device__ __host__	gdd_real(double d);
 	__device__ __host__	explicit gdd_real(int i);
 	__device__ __host__	explicit gdd_real(const double *d);
 
@@ -217,6 +233,13 @@ public:
 	//friend __device__ __host__ gqd_real::gqd_real(const gdd_real &a);
 	friend gqd_real;
 
+	friend __device__ __host__ gqd_real operator+(const gqd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator==(const gqd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator<(const gqd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator<=(const gqd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator>(const gqd_real &a, const gdd_real &b);
+	friend __device__ __host__ bool operator>=(const gqd_real &a, const gdd_real &b);
+
 };
 
 
@@ -294,9 +317,12 @@ __device__ bool is_zero(const gdd_real &a);
 __device__ bool is_one(const gdd_real &a);
 __device__ bool is_positive(const gdd_real &a);
 __device__ bool is_negative(const gdd_real &a);
+
 __device__ bool isnan(const gdd_real &a);
 __device__ bool isfinite(const gdd_real &a);
 __device__ bool isinf(const gdd_real &a);
+__device__ bool is_pinf(const gdd_real &a);
+__device__ bool is_ninf(const gdd_real &a);
 
 __device__ __host__ double to_double(const gdd_real &a);
 __device__ __host__ int    to_int(const gdd_real &a);

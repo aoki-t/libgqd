@@ -9,12 +9,14 @@
 __device__
 gdd_real sqrt(const gdd_real &a) {
 	if (is_zero(a)) {
-		return _dd_zero;
+		return a;
 	}
 
-	//TODO: should make an error
+	if (is_pinf(a)) {
+		return _dd_inf;
+	}
+
 	if (is_negative(a)) {
-		//return _nan;
 		return _dd_qnan;
 	}
 
