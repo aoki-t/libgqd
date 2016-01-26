@@ -7,6 +7,7 @@
 
 extern __device__ __constant__ double dd_inv_fact[n_dd_inv_fact][2];
 
+// Table of sin(k * pi/16) and cos(k * pi/16).
 static __device__ __constant__ double dd_sin_table[4][2] = {
 	{ 1.950903220161282758e-01, -7.991079068461731263e-18 },
 	{ 3.826834323650897818e-01, -1.005077269646158761e-17 },
@@ -24,8 +25,8 @@ static __device__ __constant__ double dd_cos_table[4][2] = {
 
 
 
-/* Computes sin(a) using Taylor series.
-   Assumes |a| <= pi/32.                           */
+// Computes sin(a) using Taylor series.
+// Assumes |a| <= pi/32.
 __device__
 gdd_real sin_taylor(const gdd_real &a) {
 	const double thresh = 0.5 * fabs(to_double(a)) * _dd_eps;
@@ -88,6 +89,18 @@ void sincos_taylor(const gdd_real &a, gdd_real &sin_a, gdd_real &cos_a) {
 
 __device__
 gdd_real sin(const gdd_real &a) {  
+/*
+	Strategy.  To compute sin(x), we choose integers a, b so that
+
+		x = s + a * (pi/2) + b * (pi/16)
+
+	and |s| <= pi/32.  Using the fact that
+
+		sin(pi/16) = 0.5 * sqrt(2 - sqrt(2 + sqrt(2)))
+
+	we can compute sin(x) from sin(s), cos(s).  This greatly
+	increases the convergence of the sine Taylor series.
+*/
 
 	if (is_zero(a)) {
 		return gdd_real(0.0);
@@ -337,6 +350,22 @@ gdd_real tan(const gdd_real &a) {
 
 __device__
 gdd_real atan2(const gdd_real &y, const gdd_real &x) {
+/* 
+	Strategy: Instead of using Taylor series to compute
+	arctan, we instead use Newton's iteration to solve the equation
+
+		sin(z) = y/r    or    cos(z) = x/r
+
+	where r = sqrt(x^2 + y^2).
+	The iteration is given by
+
+		z' = z + (y - sin(z)) / cos(z)          (for equation 1)
+		z' = z - (x - cos(z)) / sin(z)          (for equation 2)
+
+	Here, x and y are normalized so that x^2 + y^2 = 1.
+	If |x| > |y|, then first iteration is used since the
+	denominator is larger.  Otherwise, the second is used.
+*/
 
 	if (is_zero(x)) {
 
@@ -424,6 +453,7 @@ gdd_real acos(const gdd_real &a) {
 
 	return atan2(sqrt(1.0 - sqr(a)), a);
 }
+
 
 __device__
 gdd_real sinh(const gdd_real &a) {

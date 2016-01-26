@@ -4,10 +4,21 @@
 //#include "common.cu"
 #include "gdd_real.h"
 
-/* Computes the square root of the double-double number dd.
-   NOTE: dd must be a non-negative number.                   */
+// Computes the square root of the double-double number dd.
+// NOTE: dd must be a non-negative number.
 __device__
 gdd_real sqrt(const gdd_real &a) {
+/* 
+	Strategy:  Use Karp's trick:  if x is an approximation
+	to sqrt(a), then
+
+	sqrt(a) = a*x + [a - (a*x)^2] * x / 2   (approx)
+
+	The approximation is accurate to twice the accuracy of x.
+	Also, the multiplication (a*x) and [-]*x can be done with
+	only half the precision.
+*/
+
 	if (is_zero(a)) {
 		return a;
 	}
@@ -27,22 +38,25 @@ gdd_real sqrt(const gdd_real &a) {
 	//return a - sqr(ax);
 }
 
-/* Computes the n-th root of the double-double number a.
-NOTE: n must be a positive integer.
-NOTE: If n is even, then a must not be negative.       */
+
+// Computes the n-th root of the double-double number a.
+// NOTE: n must be a positive integer.
+// NOTE: If n is even, then a must not be negative.
 __device__
 gdd_real nroot(const gdd_real &a, int n) {
-	/* Strategy:  Use Newton iteration for the function
+/*
+	Strategy:  Use Newton iteration for the function
 
 		f(x) = x^(-n) - a
 
-		to find its root a^{-1/n}.  The iteration is thus
+	to find its root a^{-1/n}.  The iteration is thus
 
 		x' = x + x * (1 - a * x^n) / n
 
-		which converges quadratically.  We can then find
-		a^{1/n} by taking the reciprocal.
-	*/
+	which converges quadratically.  We can then find
+	a^{1/n} by taking the reciprocal.
+*/
+
 	if (n == 0) {
 		return _dd_qnan;
 	}
