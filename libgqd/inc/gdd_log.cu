@@ -5,10 +5,27 @@
 #include "gdd_real.h"
 
 
-/* Logarithm.  Computes log(x) in double-double precision.
-   This is a natural logarithm (i.e., base e).            */
+// Natural logarithm.  Computes log(x) in double-double precision.
 __device__
 gdd_real log(const gdd_real &a) {
+/* 
+	Strategy.  The Taylor series for log converges much more
+	slowly than that of exp, due to the lack of the factorial
+	term in the denominator.  Hence this routine instead tries
+	to determine the root of the function
+
+	f(x) = exp(x) - a
+
+	using Newton iteration.  The iteration is given by
+
+	x' = x - f(x)/f'(x)
+	= x - (1 - a * exp(-x))
+	= x + a * exp(-x) - 1.
+
+	Only one iteration is needed, since Newton's iteration
+	approximately doubles the number of digits per iteration. 
+*/
+
 	if (isnan(a)) {
 		return _dd_qnan;
 	}
@@ -37,7 +54,14 @@ gdd_real log(const gdd_real &a) {
 }
 
 
+// Binary logarithm.
+__device__
+gdd_real log2(const gdd_real &a) {
+	return log(a) / _dd_log2;
+}
 
+
+// Common logarithm.
 __device__
 gdd_real log10(const gdd_real &a) {
 	return log(a) / _dd_log10;
