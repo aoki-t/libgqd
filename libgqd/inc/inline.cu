@@ -3,12 +3,12 @@
 
 
 #define _QD_SPLITTER            (134217729.0)                   // = 2^27 + 1
-#define _QD_SPLIT_THRESH        (6.69692879491417e+299)         // = 2^996
+#define _QD_SPLIT_THRESH        (6.6969287949141707e+299)       // = 2^996
 
 
-/****************Basic Funcitons *********************/
+// Basic functions =============================================================
 
-//computs fl( a + b ) and err( a + b ), assumes |a| > |b|
+// computes fl( a + b ) and err( a + b ), assumes |a| > |b|
 __forceinline__ __device__ __host__
 double quick_two_sum( double a, double b, double &err ) {
 
@@ -23,6 +23,8 @@ double quick_two_sum( double a, double b, double &err ) {
 	return s;
 }
 
+
+// Computes fl(a+b) and err(a+b).
 __forceinline__ __device__ __host__
 double two_sum( double a, double b, double &err ) {
 
@@ -39,7 +41,7 @@ double two_sum( double a, double b, double &err ) {
 }
 
 
-//computes fl( a - b ) and err( a - b ), assumes |a| >= |b|
+// Computes fl( a - b ) and err( a - b ), assumes |a| >= |b|
 __forceinline__ __device__ __host__
 double quick_two_diff( double a, double b, double &err ) {
 	if(a == b) {
@@ -52,7 +54,8 @@ double quick_two_diff( double a, double b, double &err ) {
 	return s;
 }
 
-//computes fl( a - b ) and err( a - b )
+
+// Computes fl( a - b ) and err( a - b )
 __forceinline__ __device__ __host__
 double two_diff( double a, double b, double &err ) {
 	if(a == b) {
@@ -65,6 +68,7 @@ double two_diff( double a, double b, double &err ) {
 	err = (a - (s - bb)) - (b + bb);
 	return s;
 }
+
 
 // Computes high word and lo word of a 
 __forceinline__ __device__ __host__
@@ -85,7 +89,8 @@ void split(double a, double &hi, double &lo) {
 	}
 }
 
-/* Computes fl(a*b) and err(a*b). */
+
+// Computes fl(a*b) and err(a*b).
 __forceinline__  __device__ __host__
 double two_prod(double a, double b, double &err) {
 #ifdef USE_FMA
@@ -99,14 +104,14 @@ double two_prod(double a, double b, double &err) {
 	split(a, a_hi, a_lo);
 	split(b, b_hi, b_lo);
 	
-	//err = (a_hi*b_hi) - p + (a_hi*b_lo) + (a_lo*b_hi) + (a_lo*b_lo); 
+	//err = ((a_hi * b_hi - p) + a_hi * b_lo + a_lo * b_hi) + a_lo * b_lo;
 	err = (a_hi*b_hi) - p + (a_hi*b_lo) + (a_lo*b_hi) + (a_lo*b_lo); 
 
 	return p;
 #endif
 }
 
-/* Computes fl(a*a) and err(a*a).  Faster than the above method. */
+// Computes fl(a*a) and err(a*a).  Faster than calling two_prod(a, a, err). */
 __forceinline__ __device__ __host__
 double two_sqr(double a, double &err) {
 #ifdef USE_FMA
@@ -123,7 +128,8 @@ double two_sqr(double a, double &err) {
 #endif
 }
 
-/* Computes the nearest integer to d. */
+
+// Computes the nearest integer to d.
 __forceinline__ __device__ __host__
 double nint(double d) {
 	if (d == std::floor(d)){
