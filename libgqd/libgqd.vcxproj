@@ -76,6 +76,7 @@
   <ItemGroup>
     <ClInclude Include="inc\cuda_header.h" />
     <ClInclude Include="inc\gdd_real.h" />
+    <ClInclude Include="inc\gqd_real.h" />
     <ClInclude Include="inc\gqd_type.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -206,6 +207,9 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
       <CudaRuntime>None</CudaRuntime>
       <CompileOut>$(IntDir)%(Filename)%(Extension).obj</CompileOut>
+      <NvccCompilation>compile</NvccCompilation>
+      <InterleaveSourceInPTX>true</InterleaveSourceInPTX>
+      <PtxAsOptionV>true</PtxAsOptionV>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>$(cuda_path)\lib\$(PlatformName)</AdditionalLibraryDirectories>
@@ -282,6 +286,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <CompileOut>$(IntDir)%(Filename)%(Extension).obj</CompileOut>
       <AdditionalOptions>--ftz=false --fmad=false -Xcompiler "/wd 4819" %(AdditionalOptions)</AdditionalOptions>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <CudaRuntime>None</CudaRuntime>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>$(cuda_path)\lib\$(PlatformName)</AdditionalLibraryDirectories>
