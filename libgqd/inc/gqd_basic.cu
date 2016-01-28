@@ -121,7 +121,7 @@ double &gqd_real::operator[](int i) {
 	case 3:
 		return qd.w;
 	default:
-		return qd.x;
+		return qd.x;	// adohoc
 	}
 }
 
@@ -275,13 +275,13 @@ void renorm(double &c0, double &c1,
 }
 
 __device__ __host__
-void renorm( gqd_real &x ) {
-	renorm(x.x, x.y, x.z, x.w);
+void gqd_real::renorm() {
+	::renorm(qd.x, qd.y, qd.z, qd.w);
 }
 
 __device__ __host__
-void renorm( gqd_real &x, double &e) {
-	renorm(x.x, x.y, x.z, x.w, e);
+void gqd_real::renorm(double &e) {
+	::renorm(qd.x, qd.y, qd.z, qd.w, e);
 }
 
 /** additions */
@@ -307,14 +307,14 @@ gqd_real operator+(const gqd_real &a, double b) {
 	double c0, c1, c2, c3;
 	double e;
 
-	c0 = two_sum(a.x, b, e);
-	c1 = two_sum(a.y, e, e);
-	c2 = two_sum(a.z, e, e);
-	c3 = two_sum(a.w, e, e);
+	c0 = two_sum(a[0], b, e);
+	c1 = two_sum(a[1], e, e);
+	c2 = two_sum(a[2], e, e);
+	c3 = two_sum(a[3], e, e);
 
 	renorm(c0, c1, c2, c3, e);
 
-	return make_qd(c0, c1, c2, c3);
+	return gqd_real(c0, c1, c2, c3);
 }
 
 ///qd = double + qd
@@ -333,30 +333,30 @@ gqd_real sloppy_add(const gqd_real &a, const gqd_real &b) {
 	double u0, u1, u2, u3;
 	double w0, w1, w2, w3;
 
-	s0 = a.x + b.x;
-	s1 = a.y + b.y;
-	s2 = a.z + b.z;
-	s3 = a.w + b.w;
+	s0 = a[0] + b[0];
+	s1 = a[1] + b[1];
+	s2 = a[2] + b[2];
+	s3 = a[3] + b[3];
 
-	v0 = s0 - a.x;
-	v1 = s1 - a.y;
-	v2 = s2 - a.z;
-	v3 = s3 - a.w;
+	v0 = s0 - a[0];
+	v1 = s1 - a[1];
+	v2 = s2 - a[2];
+	v3 = s3 - a[3];
 
 	u0 = s0 - v0;
 	u1 = s1 - v1;
 	u2 = s2 - v2;
 	u3 = s3 - v3;
 
-	w0 = a.x - u0;
-	w1 = a.y - u1;
-	w2 = a.z - u2;
-	w3 = a.w - u3;
+	w0 = a[0] - u0;
+	w1 = a[1] - u1;
+	w2 = a[2] - u2;
+	w3 = a[3] - u3;
 
-	u0 = b.x - v0;
-	u1 = b.y - v1;
-	u2 = b.z - v2;
-	u3 = b.w - v3;
+	u0 = b[0] - v0;
+	u1 = b[1] - v1;
+	u2 = b[2] - v2;
+	u3 = b[3] - v3;
 
 	t0 = w0 + u0;
 	t1 = w1 + u1;
@@ -370,7 +370,7 @@ gqd_real sloppy_add(const gqd_real &a, const gqd_real &b) {
 
 	renorm(s0, s1, s2, s3, t0);
 
-	return make_qd(s0, s1, s2, s3);
+	return gqd_real(s0, s1, s2, s3);
 }
 
 __device__ __host__
@@ -380,10 +380,10 @@ gqd_real operator+(const gqd_real &a, const gqd_real &b) {
 
 
 /** subtractions */
-__device__ __host__
-gqd_real negative( const gqd_real &a ) {
-	return make_qd( -a.x, -a.y, -a.z, -a.w );
-}
+//__device__ __host__
+//gqd_real negative( const gqd_real &a ) {
+//	return gqd_real( -a[0], -a[1], -a[2], -a[3] );
+//}
 
 __device__ __host__
 gqd_real operator-(const gqd_real &a, double b) {
@@ -403,7 +403,7 @@ gqd_real operator-(const gqd_real &a, const gqd_real &b) {
 /** multiplications */
 __device__ __host__
 gqd_real mul_pwr2(const gqd_real &a, double b) {
-	return make_qd(a.x * b, a.y * b, a.z * b, a.w * b);
+	return gqd_real(a[0] * b, a[1] * b, a[2] * b, a[3] * b);
 }
 
 
@@ -414,10 +414,10 @@ gqd_real operator*(const gqd_real &a, double b) {
 	double q0, q1, q2;
 	double s0, s1, s2, s3, s4;
 
-	p0 = two_prod(a.x, b, q0);
-	p1 = two_prod(a.y, b, q1);
-	p2 = two_prod(a.z, b, q2);
-	p3 = a.w * b;
+	p0 = two_prod(a[0], b, q0);
+	p1 = two_prod(a[1], b, q1);
+	p2 = two_prod(a[2], b, q2);
+	p3 = a[3] * b;
 
 	s0 = p0;
 
@@ -431,7 +431,7 @@ gqd_real operator*(const gqd_real &a, double b) {
 	s4 = q2 + p2;
 
 	renorm(s0, s1, s2, s3, s4);
-	return make_qd(s0, s1, s2, s3);
+	return gqd_real(s0, s1, s2, s3);
 }
 //quad_double = double*quad_double
 __device__
@@ -446,20 +446,20 @@ gqd_real sloppy_mul(const gqd_real &a, const gqd_real &b) {
 	double t0, t1;
 	double s0, s1, s2;
 
-	p0 = two_prod(a.x, b.x, q0);
+	p0 = two_prod(a[0], b[0], q0);
 
-	p1 = two_prod(a.x, b.y, q1);
-	p2 = two_prod(a.y, b.x, q2);
+	p1 = two_prod(a[0], b[1], q1);
+	p2 = two_prod(a[1], b[0], q2);
 
-	p3 = two_prod(a.x, b.z, q3);
-	p4 = two_prod(a.y, b.y, q4);
-	p5 = two_prod(a.z, b.x, q5);
+	p3 = two_prod(a[0], b[2], q3);
+	p4 = two_prod(a[1], b[1], q4);
+	p5 = two_prod(a[2], b[0], q5);
 
 
 	/* Start Accumulation */
 	three_sum(p1, p2, q0);
 
-	//return make_qd(p1, p2, q0, 0.0);
+	//return gqd_real(p1, p2, q0, 0.0);
 
 	/* Six-Three Sum  of p2, q1, q2, p3, p4, p5. */
 	three_sum(p2, q1, q2);
@@ -471,16 +471,16 @@ gqd_real sloppy_mul(const gqd_real &a, const gqd_real &b) {
 	s1 = two_sum(s1, t0, t0);
 	s2 += (t0 + t1);
 
-	//return make_qd(s0, s1, t0, t1);
+	//return gqd_real(s0, s1, t0, t1);
 
 	/* O(eps^3) order terms */
-	//!!!s1 = s1 + (a.x*b.w + a.y*b.z + a.z*b.y + a.w*b.x + q0 + q3 + q4 + q5);
+	s1 = s1 + (a[0]*b[3] + a[1]*b[2] + a[2]*b[1] + a[3]*b[0] + q0 + q3 + q4 + q5);
 	
-	s1 = s1 + (__dmul_rn(a.x,b.w) + __dmul_rn(a.y,b.z) + 
-			__dmul_rn(a.z,b.y) + __dmul_rn(a.w,b.x) + q0 + q3 + q4 + q5);
+	//s1 = s1 + (__dmul_rn(a[0],b[3]) + __dmul_rn(a[1],b[2]) + 
+	//		__dmul_rn(a[2],b[1]) + __dmul_rn(a[3],b[0]) + q0 + q3 + q4 + q5);
 	renorm(p0, p1, s0, s1, s2);
 
-	return make_qd(p0, p1, s0, s1);
+	return gqd_real(p0, p1, s0, s1);
 	
 }
 
@@ -496,10 +496,10 @@ gqd_real sqr(const gqd_real &a) {
 	double s0, s1;
 	double t0, t1;
 
-	p0 = two_sqr(a.x, q0);
-	p1 = two_prod(2.0 * a.x, a.y, q1);
-	p2 = two_prod(2.0 * a.x, a.z, q2);
-	p3 = two_sqr(a.y, q3);
+	p0 = two_sqr(a[0], q0);
+	p1 = two_prod(2.0 * a[0], a[1], q1);
+	p2 = two_prod(2.0 * a[0], a[2], q2);
+	p3 = two_sqr(a[1], q3);
 
 	p1 = two_sum(q0, p1, q0);
 
@@ -516,8 +516,8 @@ gqd_real sqr(const gqd_real &a) {
 	p2 = quick_two_sum(s0, s1, t1);
 	p3 = quick_two_sum(t1, t0, q0);
 
-	p4 = 2.0 * a.x * a.w;
-	p5 = 2.0 * a.y * a.z;
+	p4 = 2.0 * a[0] * a[3];
+	p5 = 2.0 * a[1] * a[2];
 
 	p4 = two_sum(p4, p5, p5);
 	q2 = two_sum(q2, q3, q3);
@@ -529,7 +529,7 @@ gqd_real sqr(const gqd_real &a) {
 	p4 = p4 + q0 + t1;
 
 	renorm(p0, p1, p2, p3, p4);
-	return make_qd(p0, p1, p2, p3);
+	return gqd_real(p0, p1, p2, p3);
 }
 
 /** divisions */
@@ -539,20 +539,20 @@ gqd_real sloppy_div(const gqd_real &a, const gqd_real &b) {
 
 	gqd_real r;
 
-	q0 = a.x / b.x;
+	q0 = a[0] / b[0];
 	r = a - (b * q0);
 
-	q1 = r.x / b.x;
+	q1 = r[0] / b[0];
 	r = r - (b * q1);
 
-	q2 = r.x / b.x;
+	q2 = r[0] / b[0];
 	r = r - (b * q2);
 
-	q3 = r.x / b.x;
+	q3 = r[0] / b[0];
 
 	renorm(q0, q1, q2, q3);
 
-	return make_qd(q0, q1, q2, q3);
+	return gqd_real(q0, q1, q2, q3);
 }
 
 __device__
@@ -563,31 +563,31 @@ gqd_real operator/(const gqd_real &a, const gqd_real &b) {
 /* double / quad-double */
 __device__
 gqd_real operator/(double a, const gqd_real &b) {
-	return make_qd(a) / b;
+	return gqd_real(a) / b;
 }
 
 /* quad-double / double */
 __device__
 gqd_real operator/( const gqd_real &a, double b ) {
-	return a/make_qd(b);
+	return a/gqd_real(b);
 }
 
 /********** Miscellaneous **********/
 __device__ __host__
 gqd_real abs(const gqd_real &a) {
-	return (a.x < 0.0) ? (negative(a)) : (a);
+	return (a[0] < 0.0) ? (negative(a)) : (a);
 }
 
 /********************** Simple Conversion ********************/
 __device__ __host__
 double to_double(const gqd_real &a) {
-	return a.x;
+	return a[0];
 }
 
 __device__ __host__
 gqd_real ldexp(const gqd_real &a, int n) {
-	return make_qd(ldexp(a.x, n), ldexp(a.y, n), 
-		ldexp(a.z, n), ldexp(a.w, n));
+	return gqd_real(ldexp(a[0], n), ldexp(a[1], n), 
+		ldexp(a[2], n), ldexp(a[3], n));
 }
 
 __device__
@@ -600,17 +600,17 @@ gqd_real inv(const gqd_real &qd) {
 
 __device__ __host__
 bool operator>=(const gqd_real &a, const gqd_real &b) {
-	return (a.x > b.x || 
-		(a.x == b.x && (a.y > b.y ||
-		(a.y == b.y && (a.z > b.z ||
-		(a.z == b.z && a.w >= b.w))))));
+	return (a[0] > b[0] || 
+		(a[0] == b[0] && (a[1] > b[1] ||
+		(a[1] == b[1] && (a[2] > b[2] ||
+		(a[2] == b[2] && a[3] >= b[3]))))));
 }
 
 /********** Greater-Than-Or-Equal-To Comparison **********/
 /*
 __device__
 bool operator>=(const gqd_real &a, double b) {
-	return (a.x > b || (a.x == b && a.y >= 0.0));
+	return (a[0] > b || (a[0] == b && a[1] >= 0.0));
 }
 
 __device__
@@ -620,39 +620,39 @@ bool operator>=(double a, const gqd_real &b) {
 
 __device__
 bool operator>=(const gqd_real &a, const gqd_real &b) {
-	return (a.x > b.x || 
-			(a.x == b.x && (a.y > b.y ||
-			(a.y == b.y && (a.z > b.z ||
-			(a.z == b.z && a.w >= b.w))))));
+	return (a[0] > b[0] || 
+			(a[0] == b[0] && (a[1] > b[1] ||
+			(a[1] == b[1] && (a[2] > b[2] ||
+			(a[2] == b[2] && a[3] >= b[3]))))));
 }
 */
 
 /********** Less-Than Comparison ***********/
 __device__ __host__
 bool operator<(const gqd_real &a, double b) {
-	return (a.x < b || (a.x == b && a.y < 0.0));
+	return (a[0] < b || (a[0] == b && a[1] < 0.0));
 }
 
 __device__ __host__
 bool operator<(const gqd_real &a, const gqd_real &b) {
-	return (a.x < b.x ||
-			(a.x == b.x && (a.y < b.y ||
-			(a.y == b.y && (a.z < b.z ||
-			(a.z == b.z && a.w < b.w))))));
+	return (a[0] < b[0] ||
+			(a[0] == b[0] && (a[1] < b[1] ||
+			(a[1] == b[1] && (a[2] < b[2] ||
+			(a[2] == b[2] && a[3] < b[3]))))));
 }
 
 __device__ __host__
 bool operator<=(const gqd_real &a, const gqd_real &b) {
-	return (a.x < b.x || 
-			(a.x == b.x && (a.y < b.y ||
-			(a.y == b.y && (a.z < b.z ||
-			(a.z == b.z && a.w <= b.w))))));
+	return (a[0] < b[0] || 
+			(a[0] == b[0] && (a[1] < b[1] ||
+			(a[1] == b[1] && (a[2] < b[2] ||
+			(a[2] == b[2] && a[3] <= b[3]))))));
 }
 
 __device__ __host__
 bool operator==(const gqd_real &a, const gqd_real &b) {
-	return (a.x == b.x && a.y == b.y && 
-			a.z == b.z && a.w == b.w);
+	return (a[0] == b[0] && a[1] == b[1] && 
+			a[2] == b[2] && a[3] == b[3]);
 }
 
 
@@ -660,7 +660,7 @@ bool operator==(const gqd_real &a, const gqd_real &b) {
 /********** Less-Than-Or-Equal-To Comparison **********/
 __device__
 bool operator<=(const gqd_real &a, double b) {
-	return (a.x < b || (a.x == b && a.y <= 0.0));
+	return (a[0] < b || (a[0] == b && a[1] <= 0.0));
 }
 
 /*
@@ -673,17 +673,17 @@ bool operator<=(double a, const gqd_real &b) {
 /*
 __device__
 bool operator<=(const gqd_real &a, const gqd_real &b) {
-	return (a.x < b.x || 
-			(a.x == b.x && (a.y < b.y ||
-			(a.y == b.y && (a.z < b.z ||
-			(a.z == b.z && a.w <= b.w))))));
+	return (a[0] < b[0] || 
+			(a[0] == b[0] && (a[1] < b[1] ||
+			(a[1] == b[1] && (a[2] < b[2] ||
+			(a[2] == b[2] && a[3] <= b[3]))))));
 }
 */
 
 /********** Greater-Than-Or-Equal-To Comparison **********/
 __device__
 bool operator>=(const gqd_real &a, double b) {
-	return (a.x > b || (a.x == b && a.y >= 0.0));
+	return (a[0] > b || (a[0] == b && a[1] >= 0.0));
 }
 
 __device__
@@ -701,10 +701,10 @@ bool operator>=(double a, const gqd_real &b) {
 /*
 __device__
 bool operator>=(const gqd_real &a, const gqd_real &b) {
-	return (a.x > b.x ||
-			(a.x == b.x && (a.y > b.y ||
-			(a.y == b.y && (a.z > b.z ||
-			(a.z == b.z && a.w >= b.w))))));
+	return (a[0] > b[0] ||
+			(a[0] == b[0] && (a[1] > b[1] ||
+			(a[1] == b[1] && (a[2] > b[2] ||
+			(a[2] == b[2] && a[3] >= b[3]))))));
 }
 
 */
@@ -712,7 +712,7 @@ bool operator>=(const gqd_real &a, const gqd_real &b) {
 /********** Greater-Than Comparison ***********/
 __device__ __host__
 bool operator>(const gqd_real &a, double b) {
-	return (a.x > b || (a.x == b && a.y > 0.0));
+	return (a[0] > b || (a[0] == b && a[1] > 0.0));
 }
 
 __device__ __host__
@@ -727,72 +727,72 @@ bool operator>(double a, const gqd_real &b) {
 
 __device__ __host__ 
 bool operator>(const gqd_real &a, const gqd_real &b) {
-	return (a.x > b.x ||
-			(a.x == b.x && (a.y > b.y ||
-			(a.y == b.y && (a.z > b.z ||
-			(a.z == b.z && a.w > b.w))))));
+	return (a[0] > b[0] ||
+			(a[0] == b[0] && (a[1] > b[1] ||
+			(a[1] == b[1] && (a[2] > b[2] ||
+			(a[2] == b[2] && a[3] > b[3]))))));
 }
 
 
 __device__ __host__
 bool is_zero( const gqd_real &x ) {
-	return (x.x == 0.0);
+	return (x[0] == 0.0);
 }
 
 __device__ __host__
 bool is_one( const gqd_real &x ) {
-	return (x.x == 1.0 && x.y == 0.0 && x.z == 0.0 && x.w == 0.0);
+	return (x[0] == 1.0 && x[1] == 0.0 && x[2] == 0.0 && x[3] == 0.0);
 }
 
 __device__ __host__
 bool is_positive( const gqd_real &x ) {
-	return (x.x > 0.0);
+	return (x[0] > 0.0);
 }
 
 __device__ __host__
 bool is_negative( const gqd_real &x ) {
-	return (x.x < 0.0);
+	return (x[0] < 0.0);
 }
 
 __device__
 gqd_real nint(const gqd_real &a) {
 	double x0, x1, x2, x3;
 
-	x0 = nint(a.x);
+	x0 = nint(a[0]);
 	x1 = x2 = x3 = 0.0;
 
-	if (x0 == a.x) {
+	if (x0 == a[0]) {
 		/* First double is already an integer. */
-		x1 = nint(a.y);
+		x1 = nint(a[1]);
 
-		if (x1 == a.y) {
+		if (x1 == a[1]) {
 			/* Second double is already an integer. */
-			x2 = nint(a.z);
+			x2 = nint(a[2]);
 
-			if (x2 == a.z) {
+			if (x2 == a[2]) {
 				/* Third double is already an integer. */
-				x3 = nint(a.w);
+				x3 = nint(a[3]);
 			} else {
-				if (fabs(x2 - a.z) == 0.5 && a.w < 0.0) {
+				if (fabs(x2 - a[2]) == 0.5 && a[3] < 0.0) {
 					x2 -= 1.0;
 				}
 			}
 
 		} else {
-			if (fabs(x1 - a.y) == 0.5 && a.z < 0.0) {
+			if (fabs(x1 - a[1]) == 0.5 && a[2] < 0.0) {
 				x1 -= 1.0;
 			}
 		}
 
 	} else {
 		/* First double is not an integer. */
-		if (fabs(x0 - a.x) == 0.5 && a.y < 0.0) {
+		if (fabs(x0 - a[0]) == 0.5 && a[1] < 0.0) {
 		x0 -= 1.0;
 		}
 	}
 
 	renorm(x0, x1, x2, x3);
-	return make_qd(x0, x1, x2, x3);
+	return gqd_real(x0, x1, x2, x3);
 }
 
 __device__
