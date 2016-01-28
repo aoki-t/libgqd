@@ -734,24 +734,49 @@ bool operator>(const gqd_real &a, const gqd_real &b) {
 }
 
 
-__device__ __host__
+__device__
 bool is_zero( const gqd_real &x ) {
-	return (x[0] == 0.0);
+	return (x[0] == 0.0 || x[0] == CUDART_NEG_ZERO);
 }
 
-__device__ __host__
+__device__
 bool is_one( const gqd_real &x ) {
 	return (x[0] == 1.0 && x[1] == 0.0 && x[2] == 0.0 && x[3] == 0.0);
 }
 
-__device__ __host__
+__device__
 bool is_positive( const gqd_real &x ) {
 	return (x[0] > 0.0);
 }
 
-__device__ __host__
+__device__
 bool is_negative( const gqd_real &x ) {
-	return (x[0] < 0.0);
+	return (x[0] < 0.0 || x[0] == CUDART_NEG_ZERO);
+}
+
+__device__ __host__
+bool isnan(const gqd_real &a) {
+	return (isnan(a[0]) || isnan(a[1]) || isnan(a[2]) || isnan(a[3]));
+}
+
+__device__ __host__
+bool isfinite(const gqd_real &a) {
+	return isfinite(a[0]);
+}
+
+__device__
+bool isinf(const gqd_real &a) {
+	return (a[0] == __qd_inf[1] || a[0] == -__qd_inf[1]);
+}
+
+__device__
+bool is_pinf(const gqd_real &a) {
+	return (a[0] == __qd_inf[1]);
+}
+
+__device__
+bool is_ninf(const gqd_real &a) {
+	return (a[0] == -__qd_inf[1]);
 }
 
 __device__
