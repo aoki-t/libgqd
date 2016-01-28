@@ -5,6 +5,7 @@
 //#include "common.cu"
 
 
+// Natural logarithm.
 __device__
 gqd_real log(const gqd_real &a) {
 	if (isnan(a)) {
@@ -34,6 +35,20 @@ gqd_real log(const gqd_real &a) {
 	x = x + a * exp(negative(x)) - 1.0;
 
 	return x;
+}
+
+
+// Binary logarithm.
+__device__
+gqd_real log2(const gqd_real &a) {
+	return log(a) / _qd_log2;
+}
+
+
+// Common logarithm.
+__device__
+gqd_real log10(const gqd_real &a) {
+	return log(a) / _qd_log10;
 }
 
 
