@@ -766,7 +766,7 @@ bool isfinite(const gqd_real &a) {
 
 __device__
 bool isinf(const gqd_real &a) {
-	return (a[0] == __qd_inf[1] || a[0] == -__qd_inf[1]);
+	return isinf(a[0]);
 }
 
 __device__
