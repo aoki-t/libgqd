@@ -764,7 +764,7 @@ bool isfinite(const gqd_real &a) {
 	return isfinite(a[0]);
 }
 
-__device__
+__device__ __host__
 bool isinf(const gqd_real &a) {
 	return isinf(a[0]);
 }
