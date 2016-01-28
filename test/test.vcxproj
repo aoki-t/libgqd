@@ -140,6 +140,9 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
       <CudaRuntime>Static</CudaRuntime>
       <GenerateLineInfo>true</GenerateLineInfo>
+      <NvccCompilation>compile</NvccCompilation>
+      <PtxAsOptionV>true</PtxAsOptionV>
+      <InterleaveSourceInPTX>true</InterleaveSourceInPTX>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>$(cuda_path)\lib\$(PlatformName)</AdditionalLibraryDirectories>
@@ -190,7 +193,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>cuda.lib;cudart.lib;cudadevrt.lib;cudart_static.lib;libgqd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libgqd.lib;cuda.lib;cudart.lib;cudadevrt.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(PlatformName)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -203,6 +206,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <AdditionalCompilerOptions>
       </AdditionalCompilerOptions>
       <AdditionalOptions>--ftz=false --fmad=false -Xcompiler "/wd 4819" %(AdditionalOptions)</AdditionalOptions>
+      <NvccCompilation>compile</NvccCompilation>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>$(cuda_path)\lib\$(PlatformName)</AdditionalLibraryDirectories>
