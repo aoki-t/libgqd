@@ -2,22 +2,24 @@
 #define __GQD_SQRT_CU__
 
 
-#include "common.cu"
+#include "gqd_real.h"
+//#include "common.cu"
 
 __device__
 gqd_real sqrt(const gqd_real &a) {
 	if (is_zero(a)) {
-		return make_qd(0.0);
+		return a;
 	}
 
-	//!!!!!!!!!!
+	if (is_pinf(a)) {
+		return _qd_inf;
+	}
+
 	if (is_negative(a)) {
-		//TO DO: should return an error
-		//return _nan;
-		return make_qd(0.0);
+		return _qd_qnan;
 	}
 
-	gqd_real r = make_qd((1.0 / sqrt(a.x)));
+	gqd_real r = gqd_real((1.0 / std::sqrt(a[0])));
 	gqd_real h = mul_pwr2(a, 0.5);
 
 	r = r + ((0.5 - h * sqr(r)) * r);
