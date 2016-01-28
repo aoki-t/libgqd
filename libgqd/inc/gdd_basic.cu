@@ -672,10 +672,9 @@ bool is_negative(const gdd_real &a) {
 	return ((a.dd.x < 0.0) || (a.dd.x == CUDART_NEG_ZERO));
 }
 
-
 __device__
 bool isnan(const gdd_real &a) {
-	return (isnan(a.dd.x) == 0 && isnan(a.dd.y) == 0) ? false : true;
+	return (isnan(a.dd.x) || isnan(a.dd.y));
 }
 
 __device__
@@ -691,12 +690,12 @@ bool isinf(const gdd_real &a) {
 
 __device__
 bool is_pinf(const gdd_real &a) {
-	return (a.dd.x == CUDART_INF);
+	return (a.dd.x == __dd_inf[1]);
 }
 
 __device__
 bool is_ninf(const gdd_real &a) {
-	return (a.dd.x == -CUDART_INF);
+	return (a.dd.x == -__dd_inf[1]);
 }
 
 
