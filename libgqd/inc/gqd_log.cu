@@ -1,30 +1,33 @@
 #ifndef __GQD_LOG_CU__
 #define __GQD_LOG_CU__
 
-#include "common.cu"
+#include "gqd_real.h"
+//#include "common.cu"
 
 
 __device__
 gqd_real log(const gqd_real &a) {
+	if (isnan(a)) {
+		return _qd_qnan;
+	}
+
 	if (is_one(a)) {
-		return make_qd(0.0);
+		return _qd_zero;
 	}
 
-	//!!!!!!!!!!!!!
-	if (a.x <= 0.0) {
-		//qd_real::error("(qd_real::log): Non-positive argument.");
-		//return qd_real::_nan;
-		return make_qd( 0.0 );
+	if (is_zero(a)) {
+		return negative(_qd_inf);
 	}
 
-	//!!!!!!!!!!!!!!
-	if (a.x == 0.0)      {
-		//return _inf;
-		//TO DO: return an error
-		return make_qd( 0.0 );
+	if (is_negative(a)) {
+		return _qd_qnan;
 	}
 
-	gqd_real x = make_qd(log(a.x));  
+	if (is_pinf(a)) {
+		return _qd_inf;
+	}
+
+	gqd_real x = gqd_real(std::log(a[0]));
 
 	x = x + a * exp(negative(x)) - 1.0;
 	x = x + a * exp(negative(x)) - 1.0;
