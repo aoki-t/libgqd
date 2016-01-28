@@ -6,6 +6,7 @@
 
 extern __device__ __constant__ double qd_inv_fact[n_qd_inv_fact][4];
 
+// Table of sin(k * pi/1024) and cos(k * pi/1024).
 static __device__ __constant__ double qd_sin_tbl[256][4] = {
 	{ 3.0679567629659761e-03,  1.2690279085455925e-19,  5.2879464245328389e-36, -1.7820334081955298e-52},
 	{ 6.1358846491544753e-03,  9.0545257482474933e-20,  1.6260113133745320e-37, -9.7492001208767410e-55},

@@ -7,6 +7,17 @@
 
 __device__
 gqd_real sqrt(const gqd_real &a) {
+/*	Strategy:
+	Perform the following Newton iteration:
+
+		x' = x + (1 - a * x^2) * x / 2;
+
+	which converges to 1/sqrt(a), starting with the
+	double precision approximation to 1/sqrt(a).
+	Since Newton's iteration more or less doubles the
+	number of correct digits, we only need to perform it twice.
+*/
+
 	if (is_zero(a)) {
 		return a;
 	}
