@@ -527,6 +527,8 @@ static __device__ __constant__ double qd_cos_tbl[256][4] = {
 
 
 
+// Computes sin(a) and cos(a) using Taylor series.
+// Assumes |a| <= pi/2048.
 __device__
 static void sincos_taylor(const gqd_real &a, gqd_real &sin_a, gqd_real &cos_a) {
 	const double thresh = 0.5 * _qd_eps * fabs(to_double(a));
@@ -613,7 +615,16 @@ static gqd_real cos_taylor(const gqd_real &a) {
 
 __device__
 gqd_real sin(const gqd_real &a) {
+/*  Strategy:
+	To compute sin(x), we choose integers a, b so that
 
+		x = s + a * (pi/2) + b * (pi/1024)
+
+	and |s| <= pi/2048.  Using a precomputed table of
+	sin(k pi / 1024) and cos(k pi / 1024), we can compute
+	sin(x) from sin(s) and cos(s).  This greatly increases the
+	convergence of the sine Taylor series.
+*/
 	gqd_real z, r;
 	if (is_zero(a)) {
 		//return gqd_real(0.0);
@@ -931,10 +942,28 @@ gqd_real tan(const gqd_real &a) {
 	return s/c;
 }
 
+
+
 #ifdef ALL_MATH	
 
 __device__
 gqd_real atan2(const gqd_real &y, const gqd_real &x) {
+/*  Strategy:
+	Instead of using Taylor series to compute arctan, 
+	we instead use Newton's iteration to solve the equation
+
+		sin(z) = y/r    or    cos(z) = x/r
+
+	where r = sqrt(x^2 + y^2).
+	The iteration is given by
+
+		z' = z + (y - sin(z)) / cos(z)     (for equation 1)
+		z' = z - (x - cos(z)) / sin(z)     (for equation 2)
+
+	Here, x and y are normalized so that x^2 + y^2 = 1.
+	If |x| > |y|, then first iteration is used since the 
+	denominator is larger.  Otherwise, the second is used.
+*/
 
 	if (is_zero(x)) {
 
@@ -1038,6 +1067,8 @@ gqd_real sinh(const gqd_real &a) {
 		return mul_pwr2(ea - inv(ea), 0.5);
 	}
 
+	// Since a is small, using the above formula gives
+	// a lot of cancellation.   So use Taylor series.
 	gqd_real s = a;
 	gqd_real t = a;
 	gqd_real r = sqr(t);
