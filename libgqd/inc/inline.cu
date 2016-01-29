@@ -111,7 +111,7 @@ double two_prod(double a, double b, double &err) {
 #endif
 }
 
-// Computes fl(a*a) and err(a*a).  Faster than calling two_prod(a, a, err). */
+// Computes fl(a*a) and err(a*a).  Faster than calling two_prod(a, a, err).
 __forceinline__ __device__ __host__
 double two_sqr(double a, double &err) {
 #ifdef USE_FMA
