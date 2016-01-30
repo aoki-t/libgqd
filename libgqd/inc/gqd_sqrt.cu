@@ -44,6 +44,7 @@ gqd_real sqrt(const gqd_real &a) {
 
 
 // Computes the n-th root of a
+__device__
 gqd_real nroot(const gqd_real &a, int n) {
 /*  Strategy:
 	Use Newton's iteration to solve
