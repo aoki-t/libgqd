@@ -78,8 +78,7 @@ gdd_real nroot(const gdd_real &a, int n) {
 	if (n == 2) {
 		return sqrt(a);
 	}
-
-	if (is_zero(a)){
+	if (is_zero(a)) {
 		return _dd_zero;
 	}
 
