@@ -512,13 +512,44 @@ gqd_real ieee_add(const gqd_real &a, const gqd_real &b) {
 }
 #endif
 
-__host__ __device__
+
+__device__ __host__
 gqd_real operator+(const gqd_real &a, const gqd_real &b) {
 #ifdef SLOPPY_ADD
 	return sloppy_add(a, b);
 #else
 	return ieee_add(a, b);
 #endif
+}
+
+
+// quad-double + double-double
+__device__ __host__
+gqd_real operator+(const gqd_real &a, const gdd_real &b) {
+
+	double s0, s1, s2, s3;
+	double t0, t1;
+
+	s0 = two_sum(a[0], b.dd.x, t0);
+	s1 = two_sum(a[1], b.dd.y, t1);
+
+	s1 = two_sum(s1, t0, t0);
+
+	s2 = a[2];
+	three_sum(s2, t0, t1);
+
+	s3 = two_sum(t0, a[3], t0);
+	t0 += t1;
+
+	renorm(s0, s1, s2, s3, t0);
+	return gqd_real(s0, s1, s2, s3);
+}
+
+
+// double-double + quad-double
+__device__ __host__
+gqd_real operator+(const gdd_real &a, const gqd_real &b) {
+	return (b + a);
 }
 
 
