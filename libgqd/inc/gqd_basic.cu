@@ -33,10 +33,12 @@ gqd_real::gqd_real()
 : qd({ 0.0, 0.0, 0.0, 0.0 }) {
 }
 
+
 // destructor
 __device__ __host__
 gqd_real::~gqd_real(){
 }
+
 
 __device__ __host__ 
 gqd_real::gqd_real(double x0, double x1, double x2, double x3) {
@@ -46,11 +48,13 @@ gqd_real::gqd_real(double x0, double x1, double x2, double x3) {
 	qd.w = x3;
 }
 
+
 __device__ __host__
 gqd_real::gqd_real(double d) {
 	qd.x = d;
 	qd.y = qd.z = qd.w = 0.0;
 }
+
 
 __device__ __host__
 gqd_real::gqd_real(const double *d4) {
@@ -77,11 +81,14 @@ gqd_real::gqd_real(const gdd_real &a) {
 	qd.z = qd.w = 0.0;
 }
 
+
 __device__ __host__
 gqd_real::gqd_real(int i) {
 	qd.x = static_cast<double>(i);
 	qd.y = qd.z = qd.w = 0.0;
 }
+
+
 
 // Accessors ===================================================================
 __device__ __host__
@@ -107,6 +114,7 @@ double gqd_real::operator[](int i) const {
 	}
 }
 
+
 __device__ __host__
 double &gqd_real::operator[](int i) {
 	assert(i < 4);
@@ -125,8 +133,10 @@ double &gqd_real::operator[](int i) {
 	}
 }
 
+
+
 // Assignments =================================================================
-/* quad-double = double */
+// quad-double = double */
 __device__ __host__
 gqd_real &gqd_real::operator=(double a) {
 	qd.x = a;
@@ -284,8 +294,10 @@ void gqd_real::renorm(double &e) {
 	::renorm(qd.x, qd.y, qd.z, qd.w, e);
 }
 
-/** additions */
-__device__ __host__
+
+
+// Inline funciotns ============================================================
+__forceinline__ __device__ __host__
 void three_sum(double &a, double &b, double &c) {
 	double t1, t2, t3;
 	t1 = two_sum(a, b, t2);
@@ -293,7 +305,8 @@ void three_sum(double &a, double &b, double &c) {
 	b  = two_sum(t2, t3, c);
 }
 
-__device__ __host__
+
+__forceinline__ __device__ __host__
 void three_sum2(double &a, double &b, double &c) {
 	double t1, t2, t3;
 	t1 = two_sum(a, b, t2);
@@ -301,7 +314,40 @@ void three_sum2(double &a, double &b, double &c) {
 	b = (t2 + t3);
 }
 
-///qd = qd + double
+
+// s = quick_three_accum(a, b, c) adds c to the dd-pair (a, b).
+// If the result does not fit in two doubles, then the sum is
+// output into s and (a,b) contains the remainder.  Otherwise
+// s is zero and (a,b) contains the sum.
+__forceinline__ __device__ __host__
+double quick_three_accum(double &a, double &b, double c) {
+	double s;
+	bool za, zb;
+
+	s = two_sum(b, c, b);
+	s = two_sum(a, s, a);
+
+	za = (a != 0.0);
+	zb = (b != 0.0);
+
+	if (za && zb)
+		return s;
+
+	if (!zb) {
+		b = a;
+		a = s;
+	} else {
+		a = s;
+	}
+
+	return 0.0;
+}
+
+
+
+// Additions ===================================================================
+
+// quad-double + double
 __device__ __host__
 gqd_real operator+(const gqd_real &a, double b) {
 	double c0, c1, c2, c3;
@@ -317,14 +363,17 @@ gqd_real operator+(const gqd_real &a, double b) {
 	return gqd_real(c0, c1, c2, c3);
 }
 
-///qd = double + qd
+
+// double + quad-double
 __device__ __host__
 gqd_real operator+( double a, const gqd_real &b ) {
 	return ( b + a );
 }
 
-///qd = qd + qd
-__device__ __host__
+
+// quad-double + quad-double
+#ifdef SLOPPY_ADD
+__forceinline__ __device__ __host__
 gqd_real sloppy_add(const gqd_real &a, const gqd_real &b) {
 	double s0, s1, s2, s3;
 	double t0, t1, t2, t3;
@@ -373,13 +422,107 @@ gqd_real sloppy_add(const gqd_real &a, const gqd_real &b) {
 	return gqd_real(s0, s1, s2, s3);
 }
 
-__device__ __host__
+#else
+__forceinline__ __device__ __host__
+gqd_real ieee_add(const gqd_real &a, const gqd_real &b) {
+	int i, j, k;
+	double s, t;
+	double u, v;	 /* double-length accumulator */
+	double x[4] = { 0.0, 0.0, 0.0, 0.0 };
+	double aa[4];
+	double bb[4];
+
+	aa[0] = a[0];
+	aa[1] = a[1];
+	aa[2] = a[2];
+	aa[3] = a[3];
+
+	bb[0] = b[0];
+	bb[1] = b[1];
+	bb[2] = b[2];
+	bb[3] = b[3];
+
+	i = j = k = 0;
+	if (std::abs(aa[i]) > std::abs(bb[j])) {
+		u = aa[i++];
+	} else {
+		u = bb[j++];
+	}
+	if (std::abs(aa[i]) > std::abs(bb[j])) {
+		v = aa[i++];
+	} else {
+		v = bb[j++];
+	}
+	u = quick_two_sum(u, v, v);
+
+	//if (std::abs(a.x) > std::abs(b.x)) {
+	//	u = a.x;
+	//	if (std::abs(a.y) > std::abs(b.x)) {
+	//		v = a.y;
+	//	}else {
+	//		v = b.x;
+	//	}
+
+	//} else {
+	//	u = b.x;
+	//	if (std::abs(a.x) > std::abs(b.y)) {
+	//		v = a.x;
+	//	} else {
+	//		v = b.y;
+	//	}
+
+	//}
+	//u = quick_two_sum(u, v, v);
+
+	while (k < 4) {
+		if (i >= 4 && j >= 4) {
+			x[k] = u;
+			if (k < 3) {
+				x[++k] = v;
+			}
+			break;
+		}
+
+		if (i >= 4) {
+			t = bb[j++];
+		} else if (j >= 4) {
+			t = aa[i++];
+		} else if (std::abs(aa[i]) > std::abs(bb[j])) {
+			t = aa[i++];
+		} else {
+			t = bb[j++];
+		}
+		s = quick_three_accum(u, v, t);
+
+		if (s != 0.0) {
+			x[k++] = s;
+		}
+	}
+
+	// add the rest.
+	for (k = i; k < 4; k++) {
+		x[3] += aa[k];
+	}
+	for (k = j; k < 4; k++) {
+		x[3] += bb[k];
+	}
+
+	renorm(x[0], x[1], x[2], x[3]);
+	return gqd_real(x[0], x[1], x[2], x[3]);
+}
+#endif
+
+__host__ __device__
 gqd_real operator+(const gqd_real &a, const gqd_real &b) {
+#ifdef SLOPPY_ADD
 	return sloppy_add(a, b);
+#else
+	return ieee_add(a, b);
+#endif
 }
 
 
-/** subtractions */
+// Subtractions ================================================================
 //__device__ __host__
 //gqd_real negative( const gqd_real &a ) {
 //	return gqd_real( -a[0], -a[1], -a[2], -a[3] );
@@ -400,7 +543,7 @@ gqd_real operator-(const gqd_real &a, const gqd_real &b) {
 	return (a + negative(b));
 }
 
-/** multiplications */
+// Multiplications =============================================================
 __device__ __host__
 gqd_real mul_pwr2(const gqd_real &a, double b) {
 	return gqd_real(a[0] * b, a[1] * b, a[2] * b, a[3] * b);
@@ -488,7 +631,7 @@ gqd_real sloppy_mul(const gqd_real &a, const gqd_real &b) {
 gqd_real operator*(const gqd_real &a, const gqd_real &b) {
 	return sloppy_mul(a, b);
 }
-
+ // Squaring ====================================================================
  __device__
 gqd_real sqr(const gqd_real &a) {
 	double p0, p1, p2, p3, p4, p5;
@@ -532,8 +675,8 @@ gqd_real sqr(const gqd_real &a) {
 	return gqd_real(p0, p1, p2, p3);
 }
 
-/** divisions */
-__device__
+ // Divisions ===================================================================
+ __device__
 gqd_real sloppy_div(const gqd_real &a, const gqd_real &b) {
 	double q0, q1, q2, q3;
 
@@ -595,8 +738,8 @@ gqd_real inv(const gqd_real &qd) {
 	return 1.0 / qd;
 }
 
-
-/********** Greater-Than Comparison ***********/
+// Comparisons =================================================================
+// Greater-Than Comparisons -----------------------------
 
 __device__ __host__
 bool operator>=(const gqd_real &a, const gqd_real &b) {
@@ -606,7 +749,7 @@ bool operator>=(const gqd_real &a, const gqd_real &b) {
 		(a[2] == b[2] && a[3] >= b[3]))))));
 }
 
-/********** Greater-Than-Or-Equal-To Comparison **********/
+// Greater-Than-Or-Equal-To Comparisons -----------------
 /*
 __device__
 bool operator>=(const gqd_real &a, double b) {
@@ -627,7 +770,7 @@ bool operator>=(const gqd_real &a, const gqd_real &b) {
 }
 */
 
-/********** Less-Than Comparison ***********/
+// Less-Than Comparisons --------------------------------
 __device__ __host__
 bool operator<(const gqd_real &a, double b) {
 	return (a[0] < b || (a[0] == b && a[1] < 0.0));
@@ -657,7 +800,7 @@ bool operator==(const gqd_real &a, const gqd_real &b) {
 
 
 
-/********** Less-Than-Or-Equal-To Comparison **********/
+// Less-Than-Or-Equal-To Comparisons --------------------
 __device__
 bool operator<=(const gqd_real &a, double b) {
 	return (a[0] < b || (a[0] == b && a[1] <= 0.0));
@@ -680,7 +823,7 @@ bool operator<=(const gqd_real &a, const gqd_real &b) {
 }
 */
 
-/********** Greater-Than-Or-Equal-To Comparison **********/
+// Greater-Than-Or-Equal-To Comparisons -----------------
 __device__
 bool operator>=(const gqd_real &a, double b) {
 	return (a[0] > b || (a[0] == b && a[1] >= 0.0));
