@@ -120,7 +120,7 @@ gdd_real negative(const gdd_real &a) {
 
 // double-double + double
 __device__ __host__
-gdd_real operator+(const gdd_real &a, const double b) {
+gdd_real operator+(const gdd_real &a, double b) {
 	double s1, s2;
 	s1 = two_sum(a.dd.x, b, s2);
 	s2 += a.dd.y;
@@ -131,7 +131,7 @@ gdd_real operator+(const gdd_real &a, const double b) {
 
 // double + double-double
 __device__ __host__
-gdd_real operator+(const double a, const gdd_real &b) {
+gdd_real operator+(double a, const gdd_real &b) {
 	return b + a;
 }
 
@@ -182,7 +182,7 @@ gdd_real operator+(const gdd_real &a, const gdd_real &b) {
 
 // double-double += double
 __inline__ __device__ __host__
-gdd_real &gdd_real::operator+=(const double a) {
+gdd_real &gdd_real::operator+=(double a) {
 	double s1, s2;
 	s1 = two_sum(dd.x, a, s2);
 	s2 += dd.y;
@@ -291,7 +291,7 @@ gdd_real &gdd_real::operator-=(const gdd_real &b) {
 
 // double-double -= double
 __device__ __host__
-gdd_real &gdd_real::operator-=(const double b) {
+gdd_real &gdd_real::operator-=(double b) {
 	double s1, s2;
 	s1 = two_diff(dd.x, b, s2);
 	s2 += dd.y;
@@ -389,7 +389,7 @@ gdd_real &gdd_real::operator*=(const gdd_real &b) {
 
 // double-double *= double
 __device__ __host__
-gdd_real &gdd_real::operator*=(const double b) {
+gdd_real &gdd_real::operator*=(double b) {
 	double p1, p2;
 
 	p1 = two_prod(dd.x, b, p2);
@@ -507,7 +507,7 @@ gdd_real &gdd_real::operator/=(const gdd_real &b) {
 
 // double-double /= double
 __device__ __host__
-gdd_real &gdd_real::operator/=(const double b) {
+gdd_real &gdd_real::operator/=(double b) {
 	*this = *this / b;
 	return *this;
 }
@@ -700,7 +700,7 @@ int to_int(const gdd_real &a) {
 }
 
 __device__ __host__
-int to_int(const double a) {
+int to_int(double a) {
 	return static_cast<int>(a);
 }
 
@@ -816,7 +816,7 @@ gdd_real fmod(const gdd_real &a, const gdd_real &b) {
 // Computes the n-th power of a double-double number.
 // NOTE:  0^0 causes an error.
 __device__
-gdd_real npwr(const gdd_real &a, const int n) {
+gdd_real npwr(const gdd_real &a, int n) {
 	if (n == 0) {
 		if (is_zero(a)){
 			return _dd_qnan;
@@ -860,7 +860,7 @@ gdd_real pow(const gdd_real &a, const gdd_real &b) {
 
 // Computes double-double ^ int
 __device__
-gdd_real operator^(const gdd_real &a, const int n) {
+gdd_real operator^(const gdd_real &a, int n) {
 	return npwr(a, n);
 }
 
@@ -869,7 +869,7 @@ gdd_real operator^(const gdd_real &a, const int n) {
 // To avoid incorrect calling when gdd_real::operator^(int) passed double parameter.
 // parameter is assumed as int(narrow cast).
 __device__
-gdd_real gdd_real::operator^(const double n){
+gdd_real gdd_real::operator^(double n){
 	return _dd_qnan;
 }
 

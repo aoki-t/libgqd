@@ -98,7 +98,7 @@ class gqd_real;	// for friend declaration
 class gdd_real {
 private:
 	double2 dd;
-	__device__ gdd_real operator^(const double n);
+	__device__ gdd_real operator^(double n);
 public:
 	//double2 dd;
 
@@ -120,16 +120,16 @@ public:
 
 	__device__ __host__ gdd_real &operator=(const gdd_real &a);
 	__device__ __host__ gdd_real &operator=(double a);
-	__device__ __host__ gdd_real &operator+=(const double a);
+	__device__ __host__ gdd_real &operator+=(double a);
 	__device__ __host__ gdd_real &operator+=(const gdd_real &a);
 	__device__ __host__ gdd_real &operator-=(const gdd_real &a);
-	__device__ __host__ gdd_real &operator-=(const double b);
+	__device__ __host__ gdd_real &operator-=(double b);
 	__device__ __host__ gdd_real &operator*=(double a);
 	__device__ __host__ gdd_real &operator*=(const gdd_real &a);
-	__device__ __host__ gdd_real &operator/=(const double a);
+	__device__ __host__ gdd_real &operator/=(double a);
 	__device__ __host__ gdd_real &operator/=(const gdd_real &a);
 
-	__device__ gdd_real operator^(const int n);
+	__device__ gdd_real operator^(int n);
 	
 
 	__host__ void to_digits(char *s, int &expn, int precision = _dd_digits) const;
@@ -148,7 +148,7 @@ public:
 	__device__ __host__ static gdd_real debug_rand(void);
 
 	friend __device__ __host__ gdd_real negative(const gdd_real &a);
-	friend __device__ __host__	gdd_real operator+(const gdd_real &a, const double b);
+	friend __device__ __host__	gdd_real operator+(const gdd_real &a, double b);
 	friend __forceinline__ __device__ __host__	gdd_real ieee_add(const gdd_real &a, const gdd_real &b);
 	friend __forceinline__ __device__ __host__	gdd_real sloppy_add(const gdd_real &a, const gdd_real &b);
 	friend __device__ __host__ gdd_real operator-(const gdd_real &a, const gdd_real &b);
@@ -248,12 +248,10 @@ __device__ __host__ gdd_real ddrand(void);
 /* Computes  dd * d  where d is known to be a power of 2. */
 __device__ __host__ gdd_real mul_pwr2(const gdd_real &dd, double d);
 __device__ __host__ gdd_real ldexp(const gdd_real &a, int exp);
-
 __device__ __host__ gdd_real sqr(const gdd_real &a);
 
-
-__device__ __host__ gdd_real operator+(const gdd_real &a, const double b);
-__device__ __host__ gdd_real operator+(const double a, const gdd_real &b);
+__device__ __host__ gdd_real operator+(const gdd_real &a, double b);
+__device__ __host__ gdd_real operator+(double a, const gdd_real &b);
 __device__ __host__ gdd_real operator+(const gdd_real &a, const gdd_real &b);
 
 __device__ __host__ gdd_real operator-(const gdd_real &a, double b);
@@ -305,7 +303,7 @@ __device__ bool is_ninf(const gdd_real &a);
 
 __device__ __host__ double to_double(const gdd_real &a);
 __device__ __host__ int    to_int(const gdd_real &a);
-__device__ __host__ int    to_int(const double a);
+__device__ __host__ int    to_int(double a);
 
 //__device__ __host__ gdd_real drem(const gdd_real &a, const gdd_real &b);
 //__device__ __host__ gdd_real divrem(const gdd_real &a, const gdd_real &b, gdd_real &r);
@@ -324,6 +322,7 @@ __device__ gdd_real fmod(const gdd_real &a, const gdd_real &b);
 __device__ gdd_real pow(const gdd_real &a, int n);
 __device__ gdd_real pow(const gdd_real &a, const gdd_real &b);
 __device__ gdd_real npwr(const gdd_real &a, int n);
+__device__ gdd_real operator^(const gdd_real &a, int n);
 
 __device__ gdd_real sqrt(const gdd_real &a);
 __device__ gdd_real nroot(const gdd_real &a, int n);
@@ -362,7 +361,7 @@ __device__ __host__ gdd_real dd_mul(double a, double b);
 __device__ __host__ gdd_real dd_div(double a, double b);
 __device__ __host__ gdd_real dd_sqr(double a, double b);
 
-//__host__ std::ostream& operator<<(std::ostream &s, const gdd_real &a);
+//std::ostream& operator<<(std::ostream &s, const gdd_real &a);
 //std::istream& operator>>(std::istream &s, gdd_real &a);
 
 

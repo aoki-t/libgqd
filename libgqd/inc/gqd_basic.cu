@@ -1584,7 +1584,7 @@ gqd_real fmod(const gqd_real &a, const gqd_real &b) {
 // Computes the n-th power of a quad-double number.
 // NOTE:  0^0 causes an error.
 //__device__
-//gqd_real npwr(const gqd_real &a, const int n) {
+//gqd_real npwr(const gqd_real &a, int n) {
 //	if (n == 0) {
 //		if (is_zero(a)) {
 //			return _dd_qnan;
@@ -1666,7 +1666,7 @@ gqd_real pow(const gqd_real &a, const gqd_real &b) {
 
 // Computes quad-double ^ int
 __device__
-gqd_real operator^(const gqd_real &a, const int n) {
+gqd_real operator^(const gqd_real &a, int n) {
 	return npwr(a, n);
 }
 

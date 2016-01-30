@@ -285,7 +285,7 @@ __device__ bool is_ninf(const gqd_real &a);
 __device__ __host__ gdd_real to_gdd_real(const gqd_real &a);
 __device__ __host__ double   to_double(const gqd_real &a);
 __device__ __host__ int      to_int(const gqd_real &a);
-//__device__ __host__ int to_int(const double a);
+//__device__ __host__ int to_int(double a);
 
 
 __device__ __host__ gqd_real nint(const gqd_real &a);

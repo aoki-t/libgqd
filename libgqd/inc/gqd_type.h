@@ -32,9 +32,9 @@
 
 
 /* initialization functions, these can be called by hosts */
-void GDDStart(const int device = 0);
+void GDDStart(int device = 0);
 void GDDEnd();
-void GQDStart(const int device = 0);
+void GQDStart(int device = 0);
 void GQDEnd();
 
 #endif /*__GDD_GQD_TYPE_H__*/
