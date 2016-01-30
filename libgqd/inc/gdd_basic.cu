@@ -83,6 +83,7 @@ gdd_real::~gdd_real(){}
 
 
 // Assignments =================================================================
+
 __device__ __host__
 gdd_real &gdd_real::operator=(const gdd_real &a) {
 	if (this == &a) {
@@ -361,25 +362,12 @@ gdd_real operator*(const gdd_real &a, double b) {
 	return gdd_real(p1, p2);
 }
 
-//__device__ __host__
-//gdd_real gdd_real::operator*(const double b) {
-//	double p1, p2;
-//
-//	p1 = two_prod(dd.x, b, p2);
-//	p2 += dd.y * b;
-//	//p2 = __dadd_rn(p2, __dmul_rn(dd.y, b) );
-//
-//	p1 = quick_two_sum(p1, p2, p2);
-//	return gdd_real(p1, p2);
-//}
-
 
 // double * double-double
 __device__ __host__
 gdd_real operator*(double a, const gdd_real &b) {
 	return (b * a);
 }
-
 
 
 
@@ -700,6 +688,7 @@ bool is_ninf(const gdd_real &a) {
 
 
 // Cast functions ==============================================================
+
 __device__ __host__
 double to_double(const gdd_real &a) {
 	return a.dd.x;
@@ -735,6 +724,7 @@ int to_int(const double a) {
 //}
 
 
+// Miscellaneous ===============================================================
 
 // Nearest Integer
 __device__

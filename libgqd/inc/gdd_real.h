@@ -116,29 +116,16 @@ public:
 
 	static void error(const char *msg);
 
+	__device__ __host__ gdd_real operator-() const;
 
 	__device__ __host__ gdd_real &operator=(const gdd_real &a);
 	__device__ __host__ gdd_real &operator=(double a);
-	//__device__ __host__ gdd_real &operator=(double a);
-	//__device__ __host__ gdd_real &operator=(const char *s);
-
-	__device__ __host__ gdd_real operator-() const;
-
-
-	//__device__ __host__ static gdd_real ieee_add(const gdd_real &a, const gdd_real &b);
-	//__device__ __host__ static gdd_real sloppy_add(const gdd_real &a, const gdd_real &b);
-	//__device__ __host__ static gdd_real sloppy_div(const gdd_real &a, const gdd_real &b);
-	//__device__ __host__ static gdd_real accurate_div(const gdd_real &a, const gdd_real &b);
-
 	__device__ __host__ gdd_real &operator+=(const double a);
 	__device__ __host__ gdd_real &operator+=(const gdd_real &a);
-
 	__device__ __host__ gdd_real &operator-=(const gdd_real &a);
 	__device__ __host__ gdd_real &operator-=(const double b);
-
 	__device__ __host__ gdd_real &operator*=(double a);
 	__device__ __host__ gdd_real &operator*=(const gdd_real &a);
-
 	__device__ __host__ gdd_real &operator/=(const double a);
 	__device__ __host__ gdd_real &operator/=(const gdd_real &a);
 
