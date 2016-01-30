@@ -42,6 +42,61 @@ gqd_real sqrt(const gqd_real &a) {
 	return r;
 }
 
+
+// Computes the n-th root of a
+gqd_real nroot(const gqd_real &a, int n) {
+/*  Strategy:
+	Use Newton's iteration to solve
+
+	    1/(x^n) - a = 0
+
+	Newton iteration becomes
+
+	    x' = x + x * (1 - a * x^n) / n
+
+	Since Newton's iteration converges quadratically,
+	we only need to perform it twice.
+*/
+	if (n <= 0) {
+		//gqd_real::error("(gqd_real::nroot): N must be positive.");
+		//return gqd_real::_nan;
+		return _qd_qnan;
+	}
+
+	if (n % 2 == 0 && is_negative(a)) {
+		//gqd_real::error("(gqd_real::nroot): Negative argument.");
+		//return gqd_real::_nan;
+		return _qd_qnan;
+	}
+
+	if (n == 1) {
+		return a;
+	}
+	if (n == 2) {
+		return sqrt(a);
+	}
+	if (is_zero(a)) {
+		return _qd_zero;
+	}
+
+
+	// Note  a^{-1/n} = exp(-log(a)/n)
+	gqd_real r = abs(a);
+	gqd_real x = std::exp(-std::log(r[0]) / n);
+
+	// Perform Newton's iteration.
+	double dbl_n = static_cast<double>(n);
+	x += x * (1.0 - r * npwr(x, n)) / dbl_n;
+	x += x * (1.0 - r * npwr(x, n)) / dbl_n;
+	x += x * (1.0 - r * npwr(x, n)) / dbl_n;
+
+	if (a[0] < 0.0) {
+		x = -x;
+	}
+	return 1.0 / x;
+}
+
+
 #endif /* __GQD_SQRT_CU__ */
 
 
