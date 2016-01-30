@@ -7,7 +7,7 @@ libgqd is ported for Windows based on GQD.
 
 ## What is different?
 *Class-rized.  
-*Accuracy priority Speed priority can switch (compile time)  
+*Switchable between Accuracy-priority and Speed-priority (compile time)  
 *Some bugs fixed.  
 
 ##Road map
