@@ -17,8 +17,8 @@
 
 //#include "common.cu"
 
-__device__ __constant__ double _dd_eps = (4.93038065763132e-32);	// 2^-104
-//__device__ __constant__ double _dd_eps = (4.930380657631323783e-32);	// 2^-104
+
+__device__ __constant__ double _dd_eps = (4.930380657631323783e-32);	// 2^-104
 
 __device__ __constant__ double __dd_zero = 0.0;
 __device__ __constant__ double __dd_one = 1.0;

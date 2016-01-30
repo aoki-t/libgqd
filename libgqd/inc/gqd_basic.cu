@@ -6,9 +6,7 @@
 
 //#include "common.cu"
 
-//__device__ __constant__ double _qd_eps = (1.21543267145725e-63); // = 2^-209
 __device__ __constant__ double _qd_eps = (1.215432671457254239e-63); // = 2^-209
-
 
 __device__ __constant__ double __qd_zero = 0.0;
 __device__ __constant__ double __qd_one = 1.0;
