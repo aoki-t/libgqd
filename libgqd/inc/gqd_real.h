@@ -238,38 +238,38 @@ __device__ __host__ gqd_real divrem(const gqd_real &a, const gqd_real &b, gqd_re
 __device__ __host__ bool operator==(const gqd_real &a, const gqd_real &b);
 __device__ __host__ bool operator==(const gqd_real &a, const gdd_real &b);
 __device__ __host__ bool operator==(const gdd_real &a, const gqd_real &b);
-__device__ __host__ bool operator==(double a, const gqd_real &b);
 __device__ __host__ bool operator==(const gqd_real &a, double b);
+__device__ __host__ bool operator==(double a, const gqd_real &b);
 
 __device__ __host__ bool operator!=(const gqd_real &a, const gqd_real &b);
 __device__ __host__ bool operator!=(const gqd_real &a, const gdd_real &b);
 __device__ __host__ bool operator!=(const gdd_real &a, const gqd_real &b);
-__device__ __host__ bool operator!=(double a, const gqd_real &b);
 __device__ __host__ bool operator!=(const gqd_real &a, double b);
-
-__device__ __host__ bool operator<(const gqd_real &a, const gqd_real &b);
-__device__ __host__ bool operator<(const gqd_real &a, const gdd_real &b);
-__device__ __host__ bool operator<(const gdd_real &a, const gqd_real &b);
-__device__ __host__ bool operator<(double a, const gqd_real &b);
-__device__ __host__ bool operator<(const gqd_real &a, double b);
+__device__ __host__ bool operator!=(double a, const gqd_real &b);
 
 __device__ __host__ bool operator>(const gqd_real &a, const gqd_real &b);
 __device__ __host__ bool operator>(const gqd_real &a, const gdd_real &b);
 __device__ __host__ bool operator>(const gdd_real &a, const gqd_real &b);
-__device__ __host__ bool operator>(double a, const gqd_real &b);
 __device__ __host__ bool operator>(const gqd_real &a, double b);
-
-__device__ __host__ bool operator<=(const gqd_real &a, const gqd_real &b);
-__device__ __host__ bool operator<=(const gqd_real &a, const gdd_real &b);
-__device__ __host__ bool operator<=(const gdd_real &a, const gqd_real &b);
-__device__ __host__ bool operator<=(double a, const gqd_real &b);
-__device__ __host__ bool operator<=(const gqd_real &a, double b);
+__device__ __host__ bool operator>(double a, const gqd_real &b);
 
 __device__ __host__ bool operator>=(const gqd_real &a, const gqd_real &b);
 __device__ __host__ bool operator>=(const gqd_real &a, const gdd_real &b);
 __device__ __host__ bool operator>=(const gdd_real &a, const gqd_real &b);
-__device__ __host__ bool operator>=(double a, const gqd_real &b);
 __device__ __host__ bool operator>=(const gqd_real &a, double b);
+__device__ __host__ bool operator>=(double a, const gqd_real &b);
+
+__device__ __host__ bool operator<(const gqd_real &a, const gqd_real &b);
+__device__ __host__ bool operator<(const gqd_real &a, const gdd_real &b);
+__device__ __host__ bool operator<(const gdd_real &a, const gqd_real &b);
+__device__ __host__ bool operator<(const gqd_real &a, double b);
+__device__ __host__ bool operator<(double a, const gqd_real &b);
+
+__device__ __host__ bool operator<=(const gqd_real &a, const gqd_real &b);
+__device__ __host__ bool operator<=(const gqd_real &a, const gdd_real &b);
+__device__ __host__ bool operator<=(const gdd_real &a, const gqd_real &b);
+__device__ __host__ bool operator<=(const gqd_real &a, double b);
+__device__ __host__ bool operator<=(double a, const gqd_real &b);
 
 __device__ bool is_zero(const gqd_real &a);
 __device__ bool is_one(const gqd_real &a);
@@ -283,8 +283,8 @@ __device__ bool is_pinf(const gqd_real &a);
 __device__ bool is_ninf(const gqd_real &a);
 
 __device__ __host__ gdd_real to_gdd_real(const gqd_real &a);
-__device__ __host__ double  to_double(const gqd_real &a);
-__device__ __host__ int to_int(const gqd_real &a);
+__device__ __host__ double   to_double(const gqd_real &a);
+__device__ __host__ int      to_int(const gqd_real &a);
 //__device__ __host__ int to_int(const double a);
 
 

@@ -1166,13 +1166,216 @@ gqd_real &gqd_real::operator/=(const gqd_real &a) {
 
 // Comparisons =================================================================
 // Equality Comparisons ---------------------------------
+
+// quad-double == quad-double
+__device__ __host__ 
+bool operator==(const gqd_real &a, const gqd_real &b) {
+	return (a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3]);
+}
+
+// quad-double == double-double
+__device__ __host__
+bool operator==(const gqd_real &a, const gdd_real &b) {
+	return (a[0] == b.dd.x && a[1] == b.dd.y && a[2] == 0.0 && a[3] == 0.0);
+}
+
+// double-double == quad-double
+__device__ __host__
+bool operator==(const gdd_real &a, const gqd_real &b) {
+	return (b == a);
+}
+
+// quad-double == double
+__device__ __host__
+bool operator==(const gqd_real &a, double b) {
+	return (a[0] == b && a[1] == 0.0 && a[2] == 0.0 && a[3] == 0.0);
+}
+
+// double == quad-double
+__device__ __host__
+bool operator==(double a, const gqd_real &b) {
+	return (b == a);
+}
+
+
+
 // Not-Equal-To Comparisons -----------------------------
 
+// quad-double != quad-double
+__device__ __host__
+bool operator!=(const gqd_real &a, const gqd_real &b) {
+	return !(a == b);
+}
+
+// quad-double != double-double
+__device__ __host__
+bool operator!=(const gqd_real &a, const gdd_real &b) {
+	return !(a == b);
+}
+
+// double-double != quad-double
+__device__ __host__
+bool operator!=(const gdd_real &a, const gqd_real &b) {
+	return !(a == b);
+}
+
+// quad-double != double
+__device__ __host__
+bool operator!=(const gqd_real &a, double b) {
+	return !(a == b);
+}
+
+// double != quad-double
+__device__ __host__
+bool operator!=(double a, const gqd_real &b) {
+	return !(a == b);
+}
+
+
+
 // Greater-Than Comparisons -----------------------------
+
+// quad-double > quad-double
+__device__ __host__
+bool operator>(const gqd_real &a, const gqd_real &b) {
+	return (a[0] > b[0] || 
+			(a[0] == b[0] && (a[1] > b[1] ||
+			(a[1] == b[1] && (a[2] > b[2] ||
+			(a[2] == b[2] && a[3] > b[3]))))));
+}
+
+// quad-double > double-double
+__device__ __host__
+bool operator>(const gqd_real &a, const gdd_real &b) {
+	return (a[0] > b.dd.x ||
+			(a[0] == b.dd.x && (a[1] > b.dd.y ||
+			(a[1] == b.dd.y && a[2] > 0.0))));
+}
+
+// double-double > quad-double
+__device__ __host__
+bool operator>(const gdd_real &a, const gqd_real &b) {
+	return (b < a);
+}
+
+// quad-double > double
+__device__ __host__
+bool operator>(const gqd_real &a, double b) {
+	return (a[0] > b || (a[0] == b && a[1] > 0.0));
+}
+
+// double > quad-double
+__device__ __host__
+bool operator>(double a, const gqd_real &b) {
+	return (b < a);
+}
+
+
+
 // Greater-Than-Or-Equal-To Comparisons -----------------
 
+// quad-double >= quad-double
+__device__ __host__
+bool operator>=(const gqd_real &a, const gqd_real &b) {
+	return !(a < b);
+}
+
+// quad-double >= double-double
+__device__ __host__
+bool operator>=(const gqd_real &a, const gdd_real &b) {
+	return !(a < b);
+}
+
+// double-double >= quad-double
+__device__ __host__
+bool operator>=(const gdd_real &a, const gqd_real &b) {
+	return !(a < b);
+}
+
+// quad-double >= double
+__device__ __host__
+bool operator>=(const gqd_real &a, double b) {
+	return !(a < b);
+}
+
+// double >= quad-double
+__device__ __host__
+bool operator>=(double a, const gqd_real &b) {
+	return !(a < b);
+}
+
+
+
 // Less-Than Comparisons --------------------------------
+
+// quad-double < quad-double
+__device__ __host__
+bool operator<(const gqd_real &a, const gqd_real &b) {
+	return (a[0] < b[0] ||
+		(a[0] == b[0] && (a[1] < b[1] ||
+		(a[1] == b[1] && (a[2] < b[2] ||
+		(a[2] == b[2] && a[3] < b[3]))))));
+}
+
+// quad-double < double-double
+__device__ __host__
+bool operator<(const gqd_real &a, const gdd_real &b) {
+	return (a[0] < b.dd.x ||
+		(a[0] == b.dd.x && (a[1] < b.dd.y ||
+		(a[1] == b.dd.y && a[2] < 0.0))));
+}
+
+// double-double < quad-double
+__device__ __host__
+bool operator<(const gdd_real &a, const gqd_real &b) {
+	return (b > a);
+}
+
+// quad-double < double
+__device__ __host__
+bool operator<(const gqd_real &a, double b) {
+	return (a[0] < b || (a[0] == b && a[1] < 0.0));
+}
+
+// double < quad-double
+__device__ __host__
+bool operator<(double a, const gqd_real &b) {
+	return (b > a);
+}
+
+
+
 // Less-Than-Or-Equal-To Comparisons --------------------
+
+// quad-double <= quad-double
+__device__ __host__
+bool operator<=(const gqd_real &a, const gqd_real &b) {
+	return !(a > b);
+}
+
+// quad-double <= double-double
+__device__ __host__
+bool operator<=(const gqd_real &a, const gdd_real &b) {
+	return !(a > b);
+}
+
+// double-double <= quad-double
+__device__ __host__
+bool operator<=(const gdd_real &a, const gqd_real &b) {
+	return !(b > a);
+}
+
+// quad-double <= double
+__device__ __host__
+bool operator<=(const gqd_real &a, double b) {
+	return !(a > b);
+}
+
+// double <= quad-double
+__device__ __host__
+bool operator<=(double a, const gqd_real &b) {
+	return !(a > b);
+}
 
 
 
