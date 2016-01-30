@@ -1287,12 +1287,76 @@ gqd_real nint(const gqd_real &a) {
 	return gqd_real(x0, x1, x2, x3);
 }
 
+// Quick version.  
+// May be off by one when qd is very close to the middle of two integers.
+__device__
+gqd_real quick_nint(const gqd_real &a) {
+	gqd_real r = gqd_real(nint(a[0]), nint(a[1]), nint(a[2]), nint(a[3]));
+	r.renorm();
+	return r;
+}
+
+// ToDo refactoring
+__device__
+gqd_real floor(const gqd_real &a) {
+	double c0, c1, c2, c3, e;
+	c0 = std::floor(a[0]);
+	c1 = c2 = c3 = 0.0;
+
+	if (c0 == a[0]) {
+		// High word is integer already.  Round the low word.
+		c1 = std::floor(a[1]);
+
+		if (c1 == a[1]) {
+			c2 = std::floor(a[2]);
+
+			if (c2 == a[2]) {
+				c3 = std::floor(a[3]);
+			}
+		}
+		renorm(c0, c1, c2, c3);
+		return gqd_real(c0, c1, c2, c3);
+	}
+
+	return gqd_real(c0, c1, c2, c3);
+}
+
+
+__device__
+gqd_real ceil(const gqd_real &a) {
+	double c0, c1, c2, c3, e;
+	c0 = std::ceil(a[0]);
+	c1 = c2 = c3 = 0.0;
+
+	if (c0 == a[0]) {
+		// High word is integer already.  Round the low word.
+		c1 = std::ceil(a[1]);
+
+		if (c1 == a[1]) {
+			c2 = std::ceil(a[2]);
+
+			if (c2 == a[2]) {
+				c3 = std::ceil(a[3]);
+			}
+		}
+		renorm(c0, c1, c2, c3);
+		return gqd_real(c0, c1, c2, c3);
+	}
+
+	return gqd_real(c0, c1, c2, c3);
+}
+
+
+__device__
+gqd_real aint(const gqd_real &a) {
+	return (a[0] >= 0.0) ? floor(a) : ceil(a);
+}
+
 
 __device__
 gqd_real abs(const gqd_real &a) {
 	return is_negative(a) ? negative(a) : a;
 }
-
 
 __device__
 gqd_real fabs(const gqd_real &a) {
@@ -1305,7 +1369,116 @@ gqd_real inv(const gqd_real &a) {
 	return 1.0 / a;
 }
 
+// ToDO overload operator%()
+__device__
+gqd_real fmod(const gqd_real &a, const gqd_real &b) {
+	gqd_real n = aint(a / b);
+	return (a - b * n);
+}
 
-#endif
+
+
+// Power functions =============================================================
+
+// Computes the n-th power of a quad-double number.
+// NOTE:  0^0 causes an error.
+//__device__
+//gqd_real npwr(const gqd_real &a, const int n) {
+//	if (n == 0) {
+//		if (is_zero(a)) {
+//			return _dd_qnan;
+//		} else {
+//			return gqd_real(1.0);
+//		}
+//	}
+//	if (n == 1) return gqd_real(a);
+//
+//	gqd_real r = a;
+//	gqd_real s(1.0);
+//
+//	for (int i = std::abs(n); i > 0;) {
+//		if (i % 2) {	// odd
+//			s *= r;
+//			--i;
+//		} else {		// even
+//			r = sqr(r);
+//			i /= 2;
+//		}
+//	}
+//
+//	// Inverse if n is negative.
+//	if (n < 0.0) {
+//		s = 1.0 / s;
+//	}
+//	return s;
+//}
+
+// ToDo refactoring
+__device__
+gqd_real npwr(const gqd_real &a, int n) {
+	if (n == 0) {
+		return _qd_one;
+	}
+
+	gqd_real r = a;		// odd-case multiplier
+	gqd_real s = 1.0;	// current answer
+	int N = std::abs(n);
+
+	if (N > 1) {
+
+		// Use binary exponentiation.
+		while (N > 0) {
+			if (N % 2 == 1) {
+				// If odd, multiply by r. 
+				// Note eventually N = 1, so this eventually executes.
+				s *= r;
+			}
+			N /= 2;
+			if (N > 0){
+				r = sqr(r);
+			}
+		}
+
+	} else {
+		s = r;
+	}
+
+	if (n < 0) {
+		return (1.0 / s);
+	}
+
+	return s;
+}
+
+
+// Computes quad-double ^ int
+__device__
+gqd_real pow(const gqd_real &a, int n) {
+	return npwr(a, n);
+}
+
+// Computes quad-double ^ quad-double
+__device__
+gqd_real pow(const gqd_real &a, const gqd_real &b) {
+	return exp(b * log(a));
+}
+
+// Computes quad-double ^ int
+__device__
+gqd_real operator^(const gqd_real &a, const int n) {
+	return npwr(a, n);
+}
+
+// Prohibit: Computes quad-double ^ double 
+// gqd_real::operator^(double) function is not supported. 
+// To avoid incorrect calling when gqd_real::operator^(int) passed double parameter.
+// parameter is assumed as int(narrow cast).
+__device__
+gqd_real gqd_real::operator^(double n){
+	return _qd_qnan;
+}
+
+
+#endif /* __GQD_BASIC_CU__ */
 
 

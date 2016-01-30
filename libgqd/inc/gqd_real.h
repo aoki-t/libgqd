@@ -1,6 +1,6 @@
 
-#ifndef _GQD_REAL_H_
-#define _GQD_REAL_H_
+#ifndef __GQD_REAL_H__
+#define __GQD_REAL_H__
 
 #define USE_FMA 1
 
@@ -61,13 +61,12 @@ extern __device__ __constant__ double   __qd_3pi4[4];
 
 class gqd_real {
 private:
-//double x[4];    /* The Components. */
-double4 qd;
+	// The Components.
+	double4 qd;
+	__device__ gqd_real operator^(double n);
+
 public:
-	//double x[4];
-
 	//double4 qd;
-
 
 	__device__ __host__ gqd_real();
 	__device__ __host__ ~gqd_real();
@@ -77,7 +76,6 @@ public:
 	__device__ __host__ gqd_real(const gqd_real &qd);
 	__device__ __host__ gqd_real(const gdd_real &dd);
 	__device__ __host__ gqd_real(int i);
-	//__device__ __host__ gqd_real(const char *s);
 
 
 	__device__ __host__ double operator[](int i) const;
@@ -92,29 +90,10 @@ public:
 	__device__ __host__ void renorm();
 	__device__ __host__ void renorm(double &e);
 
-	//__device__ __host__ void quick_accum(double d, double &e);
-	//__device__ __host__ void quick_prod_accum(double a, double b, double &e);
-
-	//bool isnan() const;
-	//bool isfinite() const { return QD_ISFINITE(x[0]); }
-	//bool isinf() const { return QD_ISINF(x[0]); }
-
-	//__device__ __host__ static gqd_real ieee_add(const gqd_real &a, const gqd_real &b);
-	//__device__ __host__ static gqd_real sloppy_add(const gqd_real &a, const gqd_real &b);
-	//__device__ __host__ static gqd_real sloppy_mul(const gqd_real &a, const gqd_real &b);
-	//__device__ __host__ static gqd_real accurate_mul(const gqd_real &a, const gqd_real &b);
-
-	//__device__ static gqd_real sloppy_div(const gqd_real &a, const gdd_real &b);
-	//__device__ static gqd_real accurate_div(const gqd_real &a, const gdd_real &b);
-	//__device__ static gqd_real sloppy_div(const gqd_real &a, const gqd_real &b);
-	//__device__ static gqd_real accurate_div(const gqd_real &a, const gqd_real &b);
-
-	//__device__ __host__	gqd_real operator+(const gdd_real &a);
 
 	__device__ __host__ gqd_real &operator=(double a);
 	__device__ __host__ gqd_real &operator=(const gdd_real &a);
 	__device__ __host__ gqd_real &operator=(const gqd_real &a);
-	//__device__ __host__ gqd_real &operator=(const char *s);
 
 	__device__ __host__ gqd_real operator-() const;
 
@@ -134,7 +113,6 @@ public:
 	__device__ __host__ gqd_real &operator/=(const gdd_real &a);
 	__device__ __host__ gqd_real &operator/=(const gqd_real &a);
 
-	__device__ __host__ gqd_real operator^(int n) const;
 
 
 
@@ -170,15 +148,15 @@ public:
 	friend __device__ __host__ gqd_real negative(const gqd_real &a);
 	//friend __device__ __host__ gqd_real operator+(const gqd_real &a, double b);
 	//friend __device__ __host__ gqd_real operator*(const gqd_real &a, double b);
-	friend __device__ __host__ __forceinline__ static gqd_real sloppy_mul(const gqd_real &a, const gqd_real &b);
-	friend __device__ __host__ __forceinline__ static gqd_real accurate_mul(const gqd_real &a, const gqd_real &b);
-	friend __device__ __host__ __forceinline__ static gqd_real accurate_div(const gqd_real &a, const gqd_real &b);
-	friend __device__ __host__ __forceinline__ static gqd_real sloppy_div(const gqd_real &a, const gqd_real &b);
+	//friend __device__ __host__ __forceinline__ static gqd_real sloppy_mul(const gqd_real &a, const gqd_real &b);
+	//friend __device__ __host__ __forceinline__ static gqd_real accurate_mul(const gqd_real &a, const gqd_real &b);
+	//friend __device__ __host__ __forceinline__ static gqd_real accurate_div(const gqd_real &a, const gqd_real &b);
+	//friend __device__ __host__ __forceinline__ static gqd_real sloppy_div(const gqd_real &a, const gqd_real &b);
 
 	friend __device__ __host__ gqd_real sqr(const gqd_real &a);
 	friend __device__ __host__ gqd_real mul_pwr2(const gqd_real &a, double b);
 	friend __device__ __host__ gqd_real ldexp(const gqd_real &a, int n);
-	friend __device__ __host__ gqd_real abs(const gqd_real &a);
+	friend __device__ gqd_real abs(const gqd_real &a);
 
 	friend __device__ __host__ double to_double(const gqd_real &a);
 	friend __device__ __host__ int to_int(const gqd_real &a);
@@ -218,61 +196,44 @@ __device__ __host__ void renorm(double &c0, double &c1, double &c2, double &c3, 
 __device__ __host__ gqd_real negative(const gqd_real &a);
 __device__ __host__ gqd_real qdrand(void);
 
-__device__ bool is_zero(const gqd_real &a);
-__device__ bool is_one(const gqd_real &a);
-__device__ bool is_positive(const gqd_real &a);
-__device__ bool is_negative(const gqd_real &a);
-
-__device__ __host__ bool isnan(const gqd_real &a);
-__device__ __host__ bool isfinite(const gqd_real &a);
-__device__ __host__ bool isinf(const gqd_real &a);
-__device__ bool is_pinf(const gqd_real &a);
-__device__ bool is_ninf(const gqd_real &a);
 
 /* Computes  qd * d  where d is known to be a power of 2.
    This can be done component wise.                      */
 __device__ __host__ gqd_real mul_pwr2(const gqd_real &qd, double d);
+__device__ __host__ gqd_real ldexp(const gqd_real &a, int n);
+__device__ __host__ gqd_real sqr(const gqd_real &a);
 
-__device__ __host__ gqd_real operator+(const gqd_real &a, const gqd_real &b);
-__device__ __host__ gqd_real operator+(const gdd_real &a, const gqd_real &b);
-__device__ __host__ gqd_real operator+(const gqd_real &a, const gdd_real &b);
 __device__ __host__ gqd_real operator+(const gqd_real &a, double b);
 __device__ __host__ gqd_real operator+(double a, const gqd_real &b);
+__device__ __host__ gqd_real operator+(const gqd_real &a, const gqd_real &b);
+__device__ __host__ gqd_real operator+(const gqd_real &a, const gdd_real &b);
+__device__ __host__ gqd_real operator+(const gdd_real &a, const gqd_real &b);
 
-__device__ __host__ gqd_real operator-(const gqd_real &a, const gqd_real &b);
-__device__ __host__ gqd_real operator-(const gdd_real &a, const gqd_real &b);
-__device__ __host__ gqd_real operator-(const gqd_real &a, const gdd_real &b);
 __device__ __host__ gqd_real operator-(const gqd_real &a, double b);
 __device__ __host__ gqd_real operator-(double a, const gqd_real &b);
+__device__ __host__ gqd_real operator-(const gqd_real &a, const gqd_real &b);
+__device__ __host__ gqd_real operator-(const gqd_real &a, const gdd_real &b);
+__device__ __host__ gqd_real operator-(const gdd_real &a, const gqd_real &b);
 
-__device__ __host__ gqd_real operator*(const gqd_real &a, const gqd_real &b);
-__device__ __host__ gqd_real operator*(const gdd_real &a, const gqd_real &b);
-__device__ __host__ gqd_real operator*(const gqd_real &a, const gdd_real &b);
 __device__ __host__ gqd_real operator*(const gqd_real &a, double b);
 __device__ __host__ gqd_real operator*(double a, const gqd_real &b);
+__device__ __host__ gqd_real operator*(const gqd_real &a, const gqd_real &b);
+__device__ __host__ gqd_real operator*(const gqd_real &a, const gdd_real &b);
+__device__ __host__ gqd_real operator*(const gdd_real &a, const gqd_real &b);
 
-__device__ __host__ gqd_real operator/(const gqd_real &a, const gqd_real &b);
-__device__ __host__ gqd_real operator/(const gdd_real &a, const gqd_real &b);
-__device__ __host__ gqd_real operator/(const gqd_real &a, const gdd_real &b);
 __device__ __host__ gqd_real operator/(const gqd_real &a, double b);
 __device__ __host__ gqd_real operator/(double a, const gqd_real &b);
+__device__ __host__ gqd_real operator/(const gqd_real &a, const gqd_real &b);
+__device__ __host__ gqd_real operator/(const gqd_real &a, const gdd_real &b);
+__device__ __host__ gqd_real operator/(const gdd_real &a, const gqd_real &b);
 
-__device__ __host__ gqd_real sqr(const gqd_real &a);
-__device__ gqd_real sqrt(const gqd_real &a);
-__device__ __host__ gqd_real pow(const gqd_real &a, int n);
-__device__ __host__ gqd_real pow(const gqd_real &a, const gqd_real &b);
-__device__ __host__ gqd_real npwr(const gqd_real &a, int n);
 
-__device__ __host__ gqd_real nroot(const gqd_real &a, int n);
+
 
 __device__ __host__ gqd_real rem(const gqd_real &a, const gqd_real &b);
 __device__ __host__ gqd_real drem(const gqd_real &a, const gqd_real &b);
 __device__ __host__ gqd_real divrem(const gqd_real &a, const gqd_real &b, gqd_real &r);
 
-__device__ __host__ gdd_real to_gdd_real(const gqd_real &a);
-__device__ __host__ double  to_double(const gqd_real &a);
-__device__ __host__ int to_int(const gqd_real &a);
-__device__ __host__ int to_int(const double a);
 
 __device__ __host__ bool operator==(const gqd_real &a, const gqd_real &b);
 __device__ __host__ bool operator==(const gqd_real &a, const gdd_real &b);
@@ -310,40 +271,69 @@ __device__ __host__ bool operator>=(const gdd_real &a, const gqd_real &b);
 __device__ __host__ bool operator>=(double a, const gqd_real &b);
 __device__ __host__ bool operator>=(const gqd_real &a, double b);
 
-__device__ __host__ gqd_real fabs(const gqd_real &a);
-__device__ __host__ gqd_real abs(const gqd_real &a);    /* same as fabs */
+__device__ bool is_zero(const gqd_real &a);
+__device__ bool is_one(const gqd_real &a);
+__device__ bool is_positive(const gqd_real &a);
+__device__ bool is_negative(const gqd_real &a);
 
-__device__ __host__ gqd_real ldexp(const gqd_real &a, int n);
+__device__ __host__ bool isnan(const gqd_real &a);
+__device__ __host__ bool isfinite(const gqd_real &a);
+__device__ __host__ bool isinf(const gqd_real &a);
+__device__ bool is_pinf(const gqd_real &a);
+__device__ bool is_ninf(const gqd_real &a);
+
+__device__ __host__ gdd_real to_gdd_real(const gqd_real &a);
+__device__ __host__ double  to_double(const gqd_real &a);
+__device__ __host__ int to_int(const gqd_real &a);
+//__device__ __host__ int to_int(const double a);
+
 
 __device__ __host__ gqd_real nint(const gqd_real &a);
 __device__ __host__ gqd_real quick_nint(const gqd_real &a);
-__device__ __host__ gqd_real aint(const gqd_real &a);
 __device__ __host__ gqd_real floor(const gqd_real &a);
 __device__ __host__ gqd_real ceil(const gqd_real &a);
+__device__ __host__ gqd_real aint(const gqd_real &a);
 
+__device__ gqd_real fabs(const gqd_real &a);
+__device__ gqd_real abs(const gqd_real &a);    // same as fabs
+__device__ gqd_real inv(const gqd_real &a);
+__device__ __host__ gqd_real fmod(const gqd_real &a, const gqd_real &b);
+
+__device__ gqd_real pow(const gqd_real &a, int n);
+__device__ gqd_real pow(const gqd_real &a, const gqd_real &b);
+__device__ gqd_real npwr(const gqd_real &a, int n);
+__device__ gqd_real operator^(const gqd_real &a, int n);
+
+
+__device__ gqd_real sqrt(const gqd_real &a);
+__device__ gqd_real nroot(const gqd_real &a, int n);
+
+__device__  gqd_real exp(const gqd_real &a);
+
+__device__  gqd_real log(const gqd_real &a);
+__device__  gqd_real log2(const gqd_real &a);
+__device__  gqd_real log10(const gqd_real &a);
 
 __device__  gqd_real sin(const gqd_real &a);
 __device__  gqd_real cos(const gqd_real &a);
 __device__  gqd_real tan(const gqd_real &a);
 __device__  void sincos(const gqd_real &a, gqd_real &s, gqd_real &c);
 
+#ifdef ALL_MATH
 __device__  gqd_real asin(const gqd_real &a);
 __device__  gqd_real acos(const gqd_real &a);
 __device__  gqd_real atan(const gqd_real &a);
 __device__  gqd_real atan2(const gqd_real &y, const gqd_real &x);
 
-__device__  gqd_real exp(const gqd_real &a);
-__device__  gqd_real log(const gqd_real &a);
-__device__  gqd_real log10(const gqd_real &a);
-
 __device__  gqd_real sinh(const gqd_real &a);
 __device__  gqd_real cosh(const gqd_real &a);
 __device__  gqd_real tanh(const gqd_real &a);
-__device__  void sincosh(const gqd_real &a, gqd_real &sin_qd, gqd_real &cos_qd);
+__device__  void sincosh(const gqd_real &a, gqd_real &s, gqd_real &c);
 
 __device__  gqd_real asinh(const gqd_real &a);
 __device__  gqd_real acosh(const gqd_real &a);
 __device__  gqd_real atanh(const gqd_real &a);
+#endif
 
 __device__ __host__ gqd_real qdrand(void);
 
@@ -352,11 +342,10 @@ __device__ __host__ gqd_real max(const gqd_real &a, const gqd_real &b, const gqd
 __device__ __host__ gqd_real min(const gqd_real &a, const gqd_real &b);
 __device__ __host__ gqd_real min(const gqd_real &a, const gqd_real &b, const gqd_real &c);
 
-__device__ __host__ gqd_real fmod(const gqd_real &a, const gqd_real &b);
 
-__device__ __host__ std::ostream &operator<<(std::ostream &s, const gqd_real &a);
-__device__ __host__ std::istream &operator>>(std::istream &s, gqd_real &a);
-
+//__device__ __host__ std::ostream &operator<<(std::ostream &s, const gqd_real &a);
+//__device__ __host__ std::istream &operator>>(std::istream &s, gqd_real &a);
 
 
-#endif /* _GQD_REAL_H_ */
+
+#endif /* __GQD_REAL_H__ */
