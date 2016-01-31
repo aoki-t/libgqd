@@ -11,6 +11,7 @@
 // computes fl( a + b ) and err( a + b ), assumes |a| > |b|
 __forceinline__ __device__ __host__
 double quick_two_sum( double a, double b, double &err ) {
+	assert(fabs(a) > fabs(b));
 
 	if(b == 0.0) {
 		err = 0.0;
@@ -44,6 +45,8 @@ double two_sum( double a, double b, double &err ) {
 // Computes fl( a - b ) and err( a - b ), assumes |a| >= |b|
 __forceinline__ __device__ __host__
 double quick_two_diff( double a, double b, double &err ) {
+	assert(fabs(a) >= fabs(b));
+
 	if(a == b) {
 		err = 0.0;
 		return 0.0;
