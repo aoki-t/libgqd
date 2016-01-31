@@ -270,6 +270,10 @@ __device__ __host__ bool operator==(const gdd_real &a, double b);
 __device__ __host__ bool operator==(double a, const gdd_real &b);
 __device__ __host__ bool operator==(const gdd_real &a, const gdd_real &b);
 
+__device__ __host__ bool operator!=(const gdd_real &a, double b);
+__device__ __host__ bool operator!=(double a, const gdd_real &b);
+__device__ __host__ bool operator!=(const gdd_real &a, const gdd_real &b);
+
 __device__ __host__ bool operator>(const gdd_real &a, double b);
 __device__ __host__ bool operator>(double a, const gdd_real &b);
 __device__ __host__ bool operator>(const gdd_real &a, const gdd_real &b);
@@ -285,10 +289,6 @@ __device__ __host__ bool operator>=(const gdd_real &a, const gdd_real &b);
 __device__ __host__ bool operator<=(const gdd_real &a, double b);
 __device__ __host__ bool operator<=(double a, const gdd_real &b);
 __device__ __host__ bool operator<=(const gdd_real &a, const gdd_real &b);
-
-__device__ __host__ bool operator!=(const gdd_real &a, double b);
-__device__ __host__ bool operator!=(double a, const gdd_real &b);
-__device__ __host__ bool operator!=(const gdd_real &a, const gdd_real &b);
 
 __device__ bool is_zero(const gdd_real &a);
 __device__ bool is_one(const gdd_real &a);

@@ -539,6 +539,28 @@ bool operator==(const gdd_real &a, const gdd_real &b) {
 
 
 
+// Not-Equal-To Comparisons -----------------------------
+
+// double-double != double
+__device__ __host__
+bool operator!=(const gdd_real &a, double b) {
+	return (a.dd.x != b || a.dd.y != 0.0);
+}
+
+// double != double-double
+__device__ __host__
+bool operator!=(double a, const gdd_real &b) {
+	return (a != b.dd.x || b.dd.y != 0.0);
+}
+
+// double-double != double-double
+__device__ __host__
+bool operator!=(const gdd_real &a, const gdd_real &b) {
+	return (a.dd.x != b.dd.x || a.dd.y != b.dd.y);
+}
+
+
+
 // Greater-Than Comparisons -----------------------------
 
 // double-double > double
@@ -623,28 +645,6 @@ bool operator<=(double a, const gdd_real &b) {
 __device__ __host__
 bool operator<=(const gdd_real &a, const gdd_real &b) {
 	return (a.dd.x < b.dd.x || (a.dd.x == b.dd.x && a.dd.y <= b.dd.y));
-}
-
-
-
-// Not-Equal-To Comparisons -----------------------------
-
-// double-double != double
-__device__ __host__
-bool operator!=(const gdd_real &a, double b) {
-	return (a.dd.x != b || a.dd.y != 0.0);
-}
-
-// double != double-double
-__device__ __host__
-bool operator!=(double a, const gdd_real &b) {
-	return (a != b.dd.x || b.dd.y != 0.0);
-}
-
-// double-double != double-double
-__device__ __host__
-bool operator!=(const gdd_real &a, const gdd_real &b) {
-	return (a.dd.x != b.dd.x || a.dd.y != b.dd.y);
 }
 
 
