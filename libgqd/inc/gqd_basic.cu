@@ -1381,7 +1381,7 @@ bool operator<=(double a, const gqd_real &b) {
 
 __device__
 bool is_zero( const gqd_real &x ) {
-	return (x[0] == 0.0 || x[0] == CUDART_NEG_ZERO);
+	return (x[0] == 0.0);
 }
 
 __device__
@@ -1592,7 +1592,7 @@ gqd_real fmod(const gqd_real &a, const gqd_real &b) {
 //			return gqd_real(1.0);
 //		}
 //	}
-//	if (n == 1) return gqd_real(a);
+//	if (n == 1) return a;
 //
 //	gqd_real r = a;
 //	gqd_real s(1.0);

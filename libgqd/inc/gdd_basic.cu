@@ -641,7 +641,7 @@ bool operator!=(const gdd_real &a, const gdd_real &b) {
 
 __device__
 bool is_zero(const gdd_real &a) {
-	return (a.dd.x == 0.0 || a.dd.x == CUDART_NEG_ZERO);
+	return (a.dd.x == 0.0);
 }
 
 __device__
