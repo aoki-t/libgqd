@@ -324,8 +324,8 @@ void three_sum2(double &a, double &b, double &c) {
 
 // s = quick_three_accum(a, b, c) adds c to the dd-pair (a, b).
 // If the result does not fit in two doubles, then the sum is
-// output into s and (a,b) contains the remainder.  Otherwise
-// s is zero and (a,b) contains the sum.
+// output into s and (a,b) contains the remainder.  
+// Otherwise s is zero and (a,b) contains the sum.
 __forceinline__ __device__ __host__
 double quick_three_accum(double &a, double &b, double c) {
 	double s;
