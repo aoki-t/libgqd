@@ -324,6 +324,9 @@ __device__ gdd_real pow(const gdd_real &a, const gdd_real &b);
 __device__ gdd_real npwr(const gdd_real &a, int n);
 __device__ gdd_real operator^(const gdd_real &a, int n);
 
+__device__ gdd_real max(const gdd_real &a, const gdd_real &b);
+__device__ gdd_real min(const gdd_real &a, const gdd_real &b);
+
 __device__ gdd_real sqrt(const gdd_real &a);
 __device__ gdd_real nroot(const gdd_real &a, int n);
 

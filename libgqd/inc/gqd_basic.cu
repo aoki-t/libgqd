@@ -1680,6 +1680,38 @@ gqd_real gqd_real::operator^(double n){
 }
 
 
+
+// Max Min functions ===========================================================
+
+__device__
+gqd_real max(const gqd_real &a, const gqd_real &b) {
+	if (isnan(a)) {
+		return b;
+	}
+	if (isnan(b)) {
+		return a;
+	}
+
+	return (a > b) ? a : b;
+}
+
+
+__device__
+gqd_real min(const gqd_real &a, const gqd_real &b) {
+	if (isnan(a)) {
+		return b;
+	}
+	if (isnan(b)) {
+		return a;
+	}
+
+	return (a < b) ? a : b;
+}
+
+
+
+
+
 #endif /* __GQD_BASIC_CU__ */
 
 

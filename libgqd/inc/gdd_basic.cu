@@ -116,6 +116,7 @@ gdd_real negative(const gdd_real &a) {
 }
 
 
+
 // Additions ===================================================================
 
 // double-double + double
@@ -288,6 +289,7 @@ gdd_real &gdd_real::operator-=(const gdd_real &b) {
 	return *this;
 #endif
 }
+
 
 // double-double -= double
 __device__ __host__
@@ -515,8 +517,8 @@ gdd_real &gdd_real::operator/=(double b) {
 
 
 // Comparisons =================================================================
-
 // Equality Comparisons ---------------------------------
+
 // double-double == double
 __device__ __host__
 bool operator==(const gdd_real &a, double b) {
@@ -536,7 +538,9 @@ bool operator==(const gdd_real &a, const gdd_real &b) {
 }
 
 
+
 // Greater-Than Comparisons -----------------------------
+
 // double-double > double
 __device__ __host__
 bool operator>(const gdd_real &a, double b) {
@@ -556,7 +560,9 @@ bool operator>(const gdd_real &a, const gdd_real &b) {
 }
 
 
+
 // Less-Than Comparisons --------------------------------
+
 // double-double < double
 __device__ __host__
 bool operator<(const gdd_real &a, double b) {
@@ -576,7 +582,9 @@ bool operator<(const gdd_real &a, const gdd_real &b) {
 }
 
 
+
 // Greater-Than-Or-Equal-To Comparisons -----------------
+
 // double-double >= double
 __device__ __host__
 bool operator>=(const gdd_real &a, double b) {
@@ -596,7 +604,9 @@ bool operator>=(const gdd_real &a, const gdd_real &b) {
 }
 
 
+
 // Less-Than-Or-Equal-To Comparisons --------------------
+
 // double-double <= double
 __device__ __host__
 bool operator<=(const gdd_real &a, double b) {
@@ -616,7 +626,9 @@ bool operator<=(const gdd_real &a, const gdd_real &b) {
 }
 
 
+
 // Not-Equal-To Comparisons -----------------------------
+
 // double-double != double
 __device__ __host__
 bool operator!=(const gdd_real &a, double b) {
@@ -804,11 +816,13 @@ gdd_real inv(const gdd_real &a) {
 	return 1.0 / a;
 }
 
+
 __device__
 gdd_real fmod(const gdd_real &a, const gdd_real &b) {
 	gdd_real n = aint(a / b);
 	return (a - b * n);
 }
+
 
 
 // Power functions =============================================================
@@ -846,11 +860,13 @@ gdd_real npwr(const gdd_real &a, int n) {
 	return s;
 }
 
+
 // Computes double-double ^ int
 __device__
 gdd_real pow(const gdd_real &a, int n) {
 	return npwr(a, n);
 }
+
 
 // Computes double-double ^ double-double
 __device__
@@ -858,11 +874,13 @@ gdd_real pow(const gdd_real &a, const gdd_real &b) {
 	return exp(b * log(a));
 }
 
+
 // Computes double-double ^ int
 __device__
 gdd_real operator^(const gdd_real &a, int n) {
 	return npwr(a, n);
 }
+
 
 // Prohibit: Computes double-double ^ double 
 // gdd_real::operator^(double) function is not supported. 
@@ -871,6 +889,35 @@ gdd_real operator^(const gdd_real &a, int n) {
 __device__
 gdd_real gdd_real::operator^(double n){
 	return _dd_qnan;
+}
+
+
+
+// Max Min functions ===========================================================
+
+__device__
+gdd_real max(const gdd_real &a, const gdd_real &b) {
+	if (isnan(a)) {
+		return b;
+	}
+	if (isnan(b)) {
+		return a;
+	}
+
+	return (a > b) ? a : b;
+}
+
+
+__device__
+gdd_real min(const gdd_real &a, const gdd_real &b) {
+	if (isnan(a)) {
+		return b;
+	}
+	if (isnan(b)) {
+		return a;
+	}
+
+	return (a < b) ? a : b;
 }
 
 
