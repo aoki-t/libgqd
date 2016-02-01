@@ -74,6 +74,7 @@ double two_diff( double a, double b, double &err ) {
 
 
 // Computes high word and lo word of a 
+#ifndef USE_FMA
 __forceinline__ __device__ __host__
 void split(double a, double &hi, double &lo) {
 	double temp;
@@ -91,6 +92,7 @@ void split(double a, double &hi, double &lo) {
 		lo = a - hi;
 	}
 }
+#endif
 
 
 // Computes fl(a*b) and err(a*b).
