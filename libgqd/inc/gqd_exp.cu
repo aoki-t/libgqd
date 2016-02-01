@@ -39,6 +39,8 @@ gqd_real exp( const gqd_real &a ) {
 
 	const double k = ldexp(1.0, 16);
 	const double inv_k = 1.0 / k;
+	const double thresh = inv_k * _qd_eps;
+
 
 	if (a[0] <= -709.0) {
 		return _qd_zero;
@@ -63,7 +65,6 @@ gqd_real exp( const gqd_real &a ) {
 	double m = floor(a[0]/_qd_log2[0] + 0.5);
 	gqd_real r = mul_pwr2(a - _qd_log2 * m, inv_k);
 	gqd_real s, p, t;
-	const double thresh = inv_k * _qd_eps;
 
 	p = sqr(r);
 	s = r + mul_pwr2(p, 0.5);

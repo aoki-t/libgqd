@@ -41,6 +41,7 @@ gdd_real exp(const gdd_real &a) {
 
 	const double k = 512.0;
 	const double inv_k = 1.0 / k;
+	const double thresh = inv_k * _qd_eps;
 
 	if (a.dd.x <= -709.0){
 		return _dd_zero;
@@ -76,7 +77,7 @@ gdd_real exp(const gdd_real &a) {
 		p = p * r;
 		++i;
 		t = p * gdd_real(dd_inv_fact[i][0], dd_inv_fact[i][1]);
-	} while ((fabs(to_double(t)) > inv_k * _dd_eps) && (i < 5));
+	} while ( (fabs(to_double(t)) > thresh) && (i < 5) );
 
 	s = s + t;
 
