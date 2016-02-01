@@ -41,7 +41,7 @@ gdd_real exp(const gdd_real &a) {
 
 	const double k = 512.0;
 	const double inv_k = 1.0 / k;
-	const double thresh = inv_k * _qd_eps;
+	const double thresh = inv_k * _dd_eps;
 
 	if (a.dd.x <= -709.0){
 		return _dd_zero;
