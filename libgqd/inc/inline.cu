@@ -6,6 +6,14 @@
 #define _QD_SPLIT_THRESH        (6.6969287949141707e+299)       // = 2^996
 
 
+// For translate
+static union trans {
+	__int64 asInt64;
+	double  asDouble;
+};
+
+
+
 // Basic functions =============================================================
 
 // computes fl( a + b ) and err( a + b ), assumes |a| > |b|
