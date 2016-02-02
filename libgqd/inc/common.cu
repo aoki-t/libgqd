@@ -24,7 +24,7 @@ union type_trans_dbl{
 
 /** initialization function */
 void GDDStart(int device) {
-	printf("GDD turns on...");
+	printf("GDD turns on ...");
 	cudaSetDevice(device);
 
 
@@ -65,7 +65,7 @@ void GQDEnd() {
 }
 
 void GQDStart(int device) {
-	printf("GQD turns on ...\n");
+	printf("GQD turns on ...");
 	
 	cudaSetDevice(device);
 
