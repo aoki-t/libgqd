@@ -7,40 +7,46 @@
 
 
 // For translate
-static union trans {
-	__int64 asInt64;
+union trans {
+	unsigned __int64 asInt64;
 	double  asDouble;
 };
-
 
 
 // Basic functions =============================================================
 
 // computes fl( a + b ) and err( a + b ), assumes |a| > |b|
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 double quick_two_sum( double a, double b, double &err ) {
-	assert(fabs(a) > fabs(b));
+	//double abs_a = fabs(a);
+	//double abs_b = fabs(b);
+	//if (!(abs_a > abs_b)) {
+	//	double t = a;
+	//	a = b;
+	//	b = t;
+	//}
 
-	if(b == 0.0) {
-		err = 0.0;
-		return (a + b);
-	}
+	assert(fabs(a) >= fabs(b));
+
+	//if(b == 0.0) {
+	//	err = 0.0;
+	//	return a;
+	//}
 
 	double s = a + b;
 	err = b - (s - a);
-
 	return s;
 }
 
 
 // Computes fl(a+b) and err(a+b).
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 double two_sum( double a, double b, double &err ) {
 
-	if( (a == 0.0) || (b == 0.0) ) {
-		err = 0.0;
-		return (a + b);
-	}
+	//if( (a == 0.0) || (b == 0.0) ) {
+	//	err = 0.0;
+	//	return (a + b);
+	//}
 
 	double s = a + b;
 	double bb = s - a;
@@ -51,14 +57,25 @@ double two_sum( double a, double b, double &err ) {
 
 
 // Computes fl( a - b ) and err( a - b ), assumes |a| >= |b|
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 double quick_two_diff( double a, double b, double &err ) {
+#ifdef _DEBUG
+	if (!(fabs(a) >= fabs(b))) {
+		printf("Not (fabs(a) >= fabs(b)) [% e, % e] in quick_two_diff(a, b, e)\n", a, b);
+	}
+#endif
+
+	if (!(fabs(a) >= fabs(b))) {
+		double t = a;
+		a = b;
+		b = t;
+	}
 	assert(fabs(a) >= fabs(b));
 
-	if(a == b) {
-		err = 0.0;
-		return 0.0;
-	}
+	//if (a == b) {
+	//	err = 0.0;
+	//	return 0.0;
+	//}
 
 	double s = a - b;
 	err = (a - s) - b;
@@ -67,7 +84,7 @@ double quick_two_diff( double a, double b, double &err ) {
 
 
 // Computes fl( a - b ) and err( a - b )
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 double two_diff( double a, double b, double &err ) {
 	if(a == b) {
 		err = 0.0;
@@ -83,7 +100,7 @@ double two_diff( double a, double b, double &err ) {
 
 // Computes high word and lo word of a 
 #ifndef USE_FMA
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 void split(double a, double &hi, double &lo) {
 	double temp;
 	if (a > _QD_SPLIT_THRESH || a < -_QD_SPLIT_THRESH)
@@ -104,7 +121,7 @@ void split(double a, double &hi, double &lo) {
 
 
 // Computes fl(a*b) and err(a*b).
-__forceinline__  __device__ __host__
+__forceinline__  __device__
 double two_prod(double a, double b, double &err) {
 #ifdef USE_FMA
 	double p = a * b;
@@ -124,8 +141,9 @@ double two_prod(double a, double b, double &err) {
 #endif
 }
 
+
 // Computes fl(a*a) and err(a*a).  Faster than calling two_prod(a, a, err).
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 double two_sqr(double a, double &err) {
 #ifdef USE_FMA
 	double p = a * a;
@@ -143,13 +161,35 @@ double two_sqr(double a, double &err) {
 
 
 // Computes the nearest integer to d.
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 double nint(double d) {
 	if (d == std::floor(d)){
 		return d;
 	}
 	return std::floor(d + 0.5);
 }
+
+
+__device__
+bool is_positive(double a) {
+	const unsigned __int64 cons = 0x8000000000000000ULL;
+	trans t;
+	t.asDouble = a;
+	bool result = !((t.asInt64 & cons) == cons);
+	return result;
+}
+
+
+__device__
+bool is_negative(double a) {
+	const unsigned __int64 cons = 0x8000000000000000ULL;
+	trans t;
+	t.asDouble = a;
+	bool result = ((t.asInt64 & cons) == cons);
+
+	return result;
+}
+
 
 
 

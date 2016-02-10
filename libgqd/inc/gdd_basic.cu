@@ -39,52 +39,55 @@ __device__ __constant__ double  __dd_3pi4[2] = { 2.356194490192344837e+00, 9.184
 // Constructors ================================================================
 
 // default constructor
-__device__ __host__
+__device__
 gdd_real::gdd_real()
 :dd({ 0.0, 0.0 }){}
 
 
-__device__ __host__
+__device__
 gdd_real::gdd_real(double hi, double lo){
 	dd.x = hi;
 	dd.y = lo;
+
+	// with renormize
+	// dd.x = two_sum(hi, lo, dd.y);
 }
 
-__device__ __host__
+__device__
 gdd_real::gdd_real(double d){
 	dd.x = d;
 	dd.y = 0.0;
 }
 
-__device__ __host__
+__device__
 gdd_real::gdd_real(int i) {
 	dd.x = (static_cast<double>(i));
 	dd.y = 0.0;
 }
 
 
-__device__ __host__
+__device__
 gdd_real::gdd_real(const double *d) {
 	dd.x = d[0];
 	dd.y = d[1];
 }
 
 // copy constructor
-__device__ __host__
+__device__
 gdd_real::gdd_real(const gdd_real &a){
 	dd.x = a.dd.x;
 	dd.y = a.dd.y;
 }
 
 // destructor
-__device__ __host__
+__device__
 gdd_real::~gdd_real(){}
 
 
 
 // Assignments =================================================================
 
-__device__ __host__
+__device__
 gdd_real &gdd_real::operator=(const gdd_real &a) {
 	if (this == &a) {
 		return *this;
@@ -96,7 +99,7 @@ gdd_real &gdd_real::operator=(const gdd_real &a) {
 }
 
 
-__device__ __host__
+__device__
 gdd_real &gdd_real::operator=(double a) {
 	dd.x = a;
 	dd.y = 0.0;
@@ -104,13 +107,13 @@ gdd_real &gdd_real::operator=(double a) {
 }
 
 
-__device__ __host__
+__device__
 gdd_real gdd_real::operator-() const {
 	return gdd_real(-dd.x, -dd.y);
 }
 
 
-__device__ __host__
+__device__
 gdd_real negative(const gdd_real &a) {
 	return gdd_real(-a.dd.x, -a.dd.y);
 }
@@ -120,8 +123,21 @@ gdd_real negative(const gdd_real &a) {
 // Additions ===================================================================
 
 // double-double + double
-__device__ __host__
+__device__
 gdd_real operator+(const gdd_real &a, double b) {
+	if (isnan(a) || isnan(b)) {
+		return _dd_qnan;
+	}
+	if ((is_pinf(a) && b == -CUDART_INF) || (is_ninf(a) && b == CUDART_INF)) {
+		return _dd_qnan;
+	}
+	if (is_zero(a)) {
+		return gdd_real(b);
+	}
+	if (b == 0.0) {
+		return a;
+	}
+
 	double s1, s2;
 	s1 = two_sum(a.dd.x, b, s2);
 	s2 += a.dd.y;
@@ -131,7 +147,7 @@ gdd_real operator+(const gdd_real &a, double b) {
 
 
 // double + double-double
-__device__ __host__
+__device__
 gdd_real operator+(double a, const gdd_real &b) {
 	return b + a;
 }
@@ -139,7 +155,7 @@ gdd_real operator+(double a, const gdd_real &b) {
 
 // double-double + double-double
 #ifdef SLOPPY_ADD
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 gdd_real sloppy_add(const gdd_real &a, const gdd_real &b) {
 	double s, e;
 
@@ -150,7 +166,7 @@ gdd_real sloppy_add(const gdd_real &a, const gdd_real &b) {
 }
 
 #else
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 gdd_real ieee_add(const gdd_real &a, const gdd_real &b) {
 	/* This one satisfies IEEE style error bound,
 	due to K. Briggs and W. Kahan.                   */
@@ -168,8 +184,24 @@ gdd_real ieee_add(const gdd_real &a, const gdd_real &b) {
 #endif
 
 
-__inline__ __device__ __host__
+__inline__ __device__
 gdd_real operator+(const gdd_real &a, const gdd_real &b) {
+	if (isnan(a) || isnan(b)) {
+		return _dd_qnan;
+	}
+	if ((is_pinf(a) && is_ninf(b)) || (is_ninf(a) && is_pinf(b))) {
+		return _dd_qnan;
+	}
+	if (a == negative(b)) {
+		return _dd_zero;
+	}
+	if (is_zero(a)) {
+		return b;
+	}
+	if (is_zero(b)) {
+		return a;
+	}
+
 #ifdef SLOPPY_ADD
 	return sloppy_add(a, b);
 #else
@@ -182,8 +214,26 @@ gdd_real operator+(const gdd_real &a, const gdd_real &b) {
 // Self-Additions ==============================================================
 
 // double-double += double
-__inline__ __device__ __host__
+__inline__ __device__
 gdd_real &gdd_real::operator+=(double a) {
+	if (isnan(*this) || isnan(a)) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if ((is_pinf(*this) && a == -CUDART_INF) || (is_ninf(*this) && a == CUDART_INF)) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if (is_zero(*this)) {
+		dd.x = a;
+		return *this;
+	}
+	if (a == 0.0) {
+		return *this;
+	}
+
 	double s1, s2;
 	s1 = two_sum(dd.x, a, s2);
 	s2 += dd.y;
@@ -193,8 +243,32 @@ gdd_real &gdd_real::operator+=(double a) {
 
 
 // double-double += double-double
-__inline__ __device__ __host__
+__inline__ __device__
 gdd_real &gdd_real::operator+=(const gdd_real &a) {
+	if (isnan(*this) || isnan(a)) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if ((is_pinf(*this) && is_ninf(a)) || (is_ninf(*this) && is_pinf(a))) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if (*this == negative(a)) {
+		dd.x = 0.0;
+		dd.y = 0.0;
+		return *this;
+	}
+	if (is_zero(*this)) {
+		dd.x = a.dd.x;
+		dd.y = a.dd.y;
+		return *this;
+	}
+	if (is_zero(a)) {
+		return *this;
+	}
+
 #ifdef SLOPPY_ADD
 	double s, e;
 	s = two_sum(dd.x, a.dd.x, e);
@@ -219,8 +293,24 @@ gdd_real &gdd_real::operator+=(const gdd_real &a) {
 // Subtractions ================================================================
 
 // double-double - double-double
-__device__ __host__
+__device__
 gdd_real operator-(const gdd_real &a, const gdd_real &b) {
+	if (isnan(a) || isnan(b)) {
+		return _dd_qnan;
+	}
+	if ((is_pinf(a) && is_pinf(b)) || (is_ninf(a) && is_ninf(b))) {
+		return _dd_qnan;
+	}
+	if (a == b) {
+		return _dd_zero;
+	}
+	if (is_zero(a)) {
+		return -b;
+	}
+	if (is_zero(b)) {
+		return a;
+	}
+
 #ifdef SLOPPY_ADD
 	double s, e;
 	s = two_diff(a.dd.x, b.dd.x, e);
@@ -243,8 +333,21 @@ gdd_real operator-(const gdd_real &a, const gdd_real &b) {
 
 
 // double-double - double
-__device__ __host__
+__device__
 gdd_real operator-(const gdd_real &a, double b) {
+	if (isnan(a) || isnan(b)) {
+		return _dd_qnan;
+	}
+	if ((is_pinf(a) && b == CUDART_INF) || (is_ninf(a) && b == -CUDART_INF)) {
+		return _dd_qnan;
+	}
+	if (is_zero(a)) {
+		return gdd_real(-b);
+	}
+	if (b == 0.0) {
+		return a;
+	}
+
 	double s1, s2;
 	s1 = two_diff(a.dd.x, b, s2);
 	s2 += a.dd.y;
@@ -254,8 +357,21 @@ gdd_real operator-(const gdd_real &a, double b) {
 
 
 // double - double-double
-__device__ __host__
+__device__
 gdd_real operator-(double a, const gdd_real &b) {
+	if (isnan(a) || isnan(b)) {
+		return _dd_qnan;
+	}
+	if ((a == CUDART_INF && is_pinf(b)) || (a == -CUDART_INF && is_ninf(b))) {
+		return _dd_qnan;
+	}
+	if (a == 0.0) {
+		return -b;
+	}
+	if (is_zero(b)) {
+		return gdd_real(a);
+	}
+
 	double s1, s2;
 	s1 = two_diff(a, b.dd.x, s2);
 	s2 -= b.dd.y;
@@ -268,8 +384,32 @@ gdd_real operator-(double a, const gdd_real &b) {
 
 // Self-Subtractions ===========================================================
 // double-double -= double-double
-__device__ __host__
+__device__
 gdd_real &gdd_real::operator-=(const gdd_real &b) {
+	if (isnan(*this) || isnan(b)) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if ((is_pinf(*this) && is_pinf(b)) || (is_ninf(*this) && is_ninf(b))) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if (*this == b) {
+		dd.x = 0.0;
+		dd.y = 0.0;
+		return *this;
+	}
+	if (is_zero(*this)) {
+		dd.x = -b.dd.x;
+		dd.y = -b.dd.y;
+		return *this;
+	}
+	if (is_zero(b)) {
+		return *this;
+	}
+
 #ifdef SLOPPY_ADD
 	double s, e;
 	s = two_diff(dd.x, b.dd.x, e);
@@ -292,8 +432,28 @@ gdd_real &gdd_real::operator-=(const gdd_real &b) {
 
 
 // double-double -= double
-__device__ __host__
+__device__
 gdd_real &gdd_real::operator-=(double b) {
+	if (isnan(*this) || isnan(b)) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if ((is_pinf(*this) && b == CUDART_INF) || (is_ninf(*this) && b == -CUDART_INF)) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if (is_zero(*this)) {
+		dd.x = -b;
+		dd.y = 0.0;
+		return *this;
+	}
+	if (b == 0.0) {
+		return *this;
+	}
+
+
 	double s1, s2;
 	s1 = two_diff(dd.x, b, s2);
 	s2 += dd.y;
@@ -306,7 +466,7 @@ gdd_real &gdd_real::operator-=(double b) {
 // Squaring ====================================================================
 
 // double-double ^ 2
-__device__ __host__
+__device__
 gdd_real sqr(const gdd_real &a) {
 	double p1, p2;
 	double s1, s2;
@@ -325,35 +485,80 @@ gdd_real sqr(const gdd_real &a) {
 // Multiplications =============================================================
 
 // double-double * (2.0 ^ exp)
-__device__ __host__
+__device__
 gdd_real ldexp(const gdd_real &a, int exp) {
 	return gdd_real(std::ldexp(a.dd.x, exp), std::ldexp(a.dd.y, exp));
 }
 
 
 // double-double * double,  where double is a power of 2.
-__device__ __host__
+__device__
 gdd_real mul_pwr2(const gdd_real &a, double b) {
 	return gdd_real(a.dd.x * b, a.dd.y * b);
 }
 
 
 // double-double * double-double
-__device__ __host__
+__device__
 gdd_real operator*(const gdd_real &a, const gdd_real &b) {
+	if (isnan(a) || isnan(b)) {
+		return _dd_qnan;
+	}
+	if ((isinf(a) && is_zero(b)) || (is_zero(a) && isinf(b))) {
+		return _dd_qnan;
+	}
+	if (is_zero(a) || is_zero(b)) {
+		return _dd_zero;
+	}
+	if (is_one(a)) {
+		return b;
+	}
+	if (is_one(-a)) {
+		return -b;
+	}
+	if (is_one(b)) {
+		return a;
+	}
+	if (is_one(-b)) {
+		return -a;
+	}
+
 	double p1, p2;
 
 	p1 = two_prod(a.dd.x, b.dd.x, p2);
 	p2 += (a.dd.x * b.dd.y + a.dd.y * b.dd.x);
 	//p2 = p2 + (__dmul_rn(a.dd.x,b.dd.y) + __dmul_rn(a.dd.y,b.dd.x));
+
 	p1 = quick_two_sum(p1, p2, p2);
 	return gdd_real(p1, p2);
 }
 
 
 // double-double * double
-__device__ __host__
+__device__
 gdd_real operator*(const gdd_real &a, double b) {
+	if (isnan(a) || isnan(b)) {
+		return _dd_qnan;
+	}
+	if ((isinf(a) && b == 0.0) || (is_zero(a) && isinf(b))) {
+		return _dd_qnan;
+	}
+	if (is_zero(a) || b == 0.0) {
+		return _dd_zero;
+	}
+	if (is_one(a)) {
+		return b;
+	}
+	if (is_one(-a)) {
+		return -b;
+	}
+	if (b == 1.0) {
+		return a;
+	}
+	if (b == -1.0) {
+		return -a;
+	}
+
 	double p1, p2;
 
 	p1 = two_prod(a.dd.x, b, p2);
@@ -366,7 +571,7 @@ gdd_real operator*(const gdd_real &a, double b) {
 
 
 // double * double-double
-__device__ __host__
+__device__
 gdd_real operator*(double a, const gdd_real &b) {
 	return (b * a);
 }
@@ -376,8 +581,42 @@ gdd_real operator*(double a, const gdd_real &b) {
 // Self-Multiplications ========================================================
 
 // double-double *= double-double
-__device__ __host__
+__device__
 gdd_real &gdd_real::operator*=(const gdd_real &b) {
+	if (isnan(*this) || isnan(b)) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if ((isinf(*this) && is_zero(b)) || (is_zero(*this) && isinf(b))) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if (is_zero(*this) || is_zero(b)) {
+		dd.x = __dd_zero;
+		dd.y = __dd_zero;
+		return *this;
+	}
+	if (is_one(*this)) {
+		dd.x = b.dd.x;
+		dd.y = b.dd.y;
+		return *this;
+	}
+	if (is_one(-(*this))) {
+		dd.x = -b.dd.x;
+		dd.y = -b.dd.y;
+		return *this;
+	}
+	if (is_one(b)) {
+		return *this;
+	}
+	if (is_one(-b)) {
+		dd.x = -dd.x;
+		dd.y = -dd.y;
+		return *this;
+	}
+
 	double p1, p2;
 
 	p1 = two_prod(dd.x, b.dd.x, p2);
@@ -390,8 +629,42 @@ gdd_real &gdd_real::operator*=(const gdd_real &b) {
 
 
 // double-double *= double
-__device__ __host__
+__device__
 gdd_real &gdd_real::operator*=(double b) {
+	if (isnan(*this) || isnan(b)) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if ((isinf(*this) && b == 0.0) || (is_zero(*this) && isinf(b))) {
+		dd.x = __dd_qnan[1];
+		dd.y = __dd_qnan[1];
+		return *this;
+	}
+	if (is_zero(*this) || b == 0.0) {
+		dd.x = __dd_zero;
+		dd.y = __dd_zero;
+		return *this;
+	}
+	if (is_one(*this)) {
+		dd.x = b;
+		dd.y = 0.0;
+		return *this;
+	}
+	if (is_one(-(*this))) {
+		dd.x = -b;
+		dd.y = 0.0;
+		return *this;
+	}
+	if (b == 1.0) {
+		return *this;
+	}
+	if (b == -1.0) {
+		dd.x = -dd.x;
+		dd.y = -dd.y;
+		return *this;
+	}
+
 	double p1, p2;
 
 	p1 = two_prod(dd.x, b, p2);
@@ -408,7 +681,7 @@ gdd_real &gdd_real::operator*=(double b) {
 
 // double-double / double-double
 #ifdef SLOPPY_DIV
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 gdd_real sloppy_div(const gdd_real &a, const gdd_real &b) {
 	double s1, s2;
 	double q1, q2;
@@ -431,7 +704,7 @@ gdd_real sloppy_div(const gdd_real &a, const gdd_real &b) {
 }
 
 #else
-__forceinline__ __device__ __host__
+__forceinline__ __device__
 gdd_real accurate_div(const gdd_real &a, const gdd_real &b) {
 	double q1, q2, q3;
 	gdd_real r;
@@ -454,8 +727,35 @@ gdd_real accurate_div(const gdd_real &a, const gdd_real &b) {
 
 
 // double-double / double-double
-__device__ __host__
+__device__
 gdd_real operator/(const gdd_real &a, const gdd_real &b) {
+	if (isnan(a) || isnan(b)) {
+		return _dd_qnan;
+	}
+	if ((is_zero(a) && is_zero(b)) || (isinf(a) && isinf(b))) {
+		// (0/0), (inf/inf)
+		return _dd_qnan;
+	}
+	if (is_zero(b)) {
+		if((is_positive(a) && is_positive(b))
+			|| (is_negative(a) && is_negative(b))) {
+			// (x/0), (-x/-0)
+			return _dd_inf;
+		} else {
+			// (x/-0), (-x/0)
+			return -(_dd_inf);
+		}
+	}
+	if (is_zero(a)) {
+		if ((is_positive(a) && is_positive(b))
+			|| is_negative(a) && is_negative(b)) {
+			// (0/x), (-0/-x)
+			return _dd_zero;
+		} else {
+			// (0/-x), (-0/x)
+			return -(_dd_zero);
+		}
+	}
 #ifdef SLOPPY_DIV
 	return sloppy_div(a, b);
 #else
@@ -465,8 +765,36 @@ gdd_real operator/(const gdd_real &a, const gdd_real &b) {
 
 
 // double-double / double
-__device__ __host__
+__device__
 gdd_real operator/(const gdd_real &a, double b) {
+	if (isnan(a) || isnan(b)) {
+		return _dd_qnan;
+	}
+	if ((is_zero(a) && b == 0.0) || (isinf(a) && isinf(b))) {
+		// (0/0), (inf/inf)
+		return _dd_qnan;
+	}
+	if (b == 0.0) {
+		if ((is_positive(a) && is_positive(b))
+			|| (is_negative(a) && is_negative(b))) {
+			// (x/0), (-x/-0)
+			return _dd_inf;
+		} else {
+			// (x/-0), (-x/0)
+			return -(_dd_inf);
+		}
+	}
+	if (is_zero(a)) {
+		if ((is_positive(a) && is_positive(b))
+			|| is_negative(a) && is_negative(b)) {
+			// (0/x), (-0/-x)
+			return _dd_zero;
+		} else {
+			// (0/-x), (-0/x)
+			return -(_dd_zero);
+		}
+	}
+
 	double q1, q2;
 	double p1, p2;
 	double s, e;
@@ -490,7 +818,7 @@ gdd_real operator/(const gdd_real &a, double b) {
 
 
 // double / double-double
-__device__ __host__
+__device__
 gdd_real operator/(double a, const gdd_real &b) {
 	return gdd_real(a) / b;
 }
@@ -500,7 +828,7 @@ gdd_real operator/(double a, const gdd_real &b) {
 // Self-Divisions ==============================================================
 
 // double-double /= double-double
-__device__ __host__
+__device__
 gdd_real &gdd_real::operator/=(const gdd_real &b) {
 	*this = *this / b;
 	return *this;
@@ -508,7 +836,7 @@ gdd_real &gdd_real::operator/=(const gdd_real &b) {
 
 
 // double-double /= double
-__device__ __host__
+__device__
 gdd_real &gdd_real::operator/=(double b) {
 	*this = *this / b;
 	return *this;
@@ -520,19 +848,19 @@ gdd_real &gdd_real::operator/=(double b) {
 // Equality Comparisons ---------------------------------
 
 // double-double == double
-__device__ __host__
+__device__
 bool operator==(const gdd_real &a, double b) {
 	return (a.dd.x == b && a.dd.y == 0.0);
 }
 
 // double == double-double
-__device__ __host__
+__device__
 bool operator==(double a, const gdd_real &b) {
 	return (a == b.dd.x && b.dd.y == 0.0);
 }
 
 // double-double == double-double
-__device__ __host__
+__device__
 bool operator==(const gdd_real &a, const gdd_real &b) {
 	return (a.dd.x == b.dd.x && a.dd.y == b.dd.y);
 }
@@ -542,19 +870,19 @@ bool operator==(const gdd_real &a, const gdd_real &b) {
 // Not-Equal-To Comparisons -----------------------------
 
 // double-double != double
-__device__ __host__
+__device__
 bool operator!=(const gdd_real &a, double b) {
 	return (a.dd.x != b || a.dd.y != 0.0);
 }
 
 // double != double-double
-__device__ __host__
+__device__
 bool operator!=(double a, const gdd_real &b) {
 	return (a != b.dd.x || b.dd.y != 0.0);
 }
 
 // double-double != double-double
-__device__ __host__
+__device__
 bool operator!=(const gdd_real &a, const gdd_real &b) {
 	return (a.dd.x != b.dd.x || a.dd.y != b.dd.y);
 }
@@ -564,19 +892,19 @@ bool operator!=(const gdd_real &a, const gdd_real &b) {
 // Greater-Than Comparisons -----------------------------
 
 // double-double > double
-__device__ __host__
+__device__
 bool operator>(const gdd_real &a, double b) {
 	return (a.dd.x > b || (a.dd.x == b && a.dd.y > 0.0));
 }
 
 // double > double-double
-__device__ __host__
+__device__
 bool operator>(double a, const gdd_real &b) {
 	return (a > b.dd.x || (a == b.dd.x && b.dd.y < 0.0));
 }
 
 // double-double > double-double
-__device__ __host__
+__device__
 bool operator>(const gdd_real &a, const gdd_real &b) {
 	return (a.dd.x > b.dd.x || (a.dd.x == b.dd.x && a.dd.y > b.dd.y));
 }
@@ -586,19 +914,19 @@ bool operator>(const gdd_real &a, const gdd_real &b) {
 // Less-Than Comparisons --------------------------------
 
 // double-double < double
-__device__ __host__
+__device__
 bool operator<(const gdd_real &a, double b) {
 	return (a.dd.x < b || (a.dd.x == b && a.dd.y < 0.0));
 }
 
 // double < double-double
-__device__ __host__
+__device__
 bool operator<(double a, const gdd_real &b) {
 	return (a < b.dd.x || (a == b.dd.x && b.dd.y > 0.0));
 }
 
 // double-double < double-double
-__device__ __host__
+__device__
 bool operator<(const gdd_real &a, const gdd_real &b) {
 	return (a.dd.x < b.dd.x || (a.dd.x == b.dd.x && a.dd.y < b.dd.y));
 }
@@ -608,19 +936,19 @@ bool operator<(const gdd_real &a, const gdd_real &b) {
 // Greater-Than-Or-Equal-To Comparisons -----------------
 
 // double-double >= double
-__device__ __host__
+__device__
 bool operator>=(const gdd_real &a, double b) {
 	return (a.dd.x > b || (a.dd.x == b && a.dd.y >= 0.0));
 }
 
 // double >= double-double
-__device__ __host__
+__device__
 bool operator>=(double a, const gdd_real &b) {
 	return (b <= a);
 }
 
 // double-double >= double-double
-__device__ __host__
+__device__
 bool operator>=(const gdd_real &a, const gdd_real &b) {
 	return (a.dd.x > b.dd.x || (a.dd.x == b.dd.x && a.dd.y >= b.dd.y));
 }
@@ -630,19 +958,19 @@ bool operator>=(const gdd_real &a, const gdd_real &b) {
 // Less-Than-Or-Equal-To Comparisons --------------------
 
 // double-double <= double
-__device__ __host__
+__device__
 bool operator<=(const gdd_real &a, double b) {
 	return (a.dd.x < b || (a.dd.x == b && a.dd.y <= 0.0));
 }
 
 // double <= double-double
-__device__ __host__
+__device__
 bool operator<=(double a, const gdd_real &b) {
 	return (b >= a);
 }
 
 // double-double <= double-double
-__device__ __host__
+__device__
 bool operator<=(const gdd_real &a, const gdd_real &b) {
 	return (a.dd.x < b.dd.x || (a.dd.x == b.dd.x && a.dd.y <= b.dd.y));
 }
@@ -657,6 +985,16 @@ bool is_zero(const gdd_real &a) {
 }
 
 __device__
+bool is_pzero(const gdd_real &a) {
+	return (a.dd.x == 0.0) && is_positive(a);
+}
+
+__device__
+bool is_nzero(const gdd_real &a) {
+	return (a.dd.x == 0.0) && is_negative(a);
+}
+
+__device__
 bool is_one(const gdd_real &a) {
 	return (a.dd.x == 1.0 && a.dd.y == 0.0);
 }
@@ -664,12 +1002,16 @@ bool is_one(const gdd_real &a) {
 
 __device__
 bool is_positive(const gdd_real &a) {
-	return (a.dd.x > 0.0);
+	return !is_negative(a);
 }
 
 __device__
 bool is_negative(const gdd_real &a) {
-	return ((a.dd.x < 0.0) || (a.dd.x == CUDART_NEG_ZERO));
+	const unsigned __int64 cons = 0x8000000000000000ULL;
+	trans t;
+	t.asDouble = a.dd.x;
+	bool result = ((t.asInt64 & cons) == cons);
+	return result;
 }
 
 __device__
@@ -701,17 +1043,17 @@ bool is_ninf(const gdd_real &a) {
 
 // Cast functions ==============================================================
 
-__device__ __host__
+__device__
 double to_double(const gdd_real &a) {
 	return a.dd.x;
 }
 
-__device__ __host__
+__device__
 int to_int(const gdd_real &a) {
 	return static_cast<int>(a.dd.x);
 }
 
-__device__ __host__
+__device__
 int to_int(double a) {
 	return static_cast<int>(a);
 }
@@ -799,19 +1141,19 @@ gdd_real aint(const gdd_real &a) {
 }
 
 
-__device__ __host__
+__device__
 gdd_real abs(const gdd_real &a) {
 	return (a.dd.x < 0.0) ? negative(a) : a;
 }
 
-__device__ __host__
+__device__
 gdd_real fabs(const gdd_real &a) {
 	return abs(a);
 }
 
 
 // Inverse number
-__device__ __host__
+__device__
 gdd_real inv(const gdd_real &a) {
 	return 1.0 / a;
 }
@@ -921,7 +1263,7 @@ gdd_real min(const gdd_real &a, const gdd_real &b) {
 }
 
 
-//__device__ __host__
+//__device__
 //gdd_real ddrand() {
 //	const double m_const = 4.6566128730773926e-10;  /* = 2^{-31} */
 //	double m = m_const;
@@ -941,12 +1283,12 @@ gdd_real min(const gdd_real &a, const gdd_real &b) {
 //	return r;
 //}
 //
-//__device__ __host__
+//__device__
 //gdd_real gdd_real::rand(void) {
 //	return ddrand();
 //}
 //
-//__device__ __host__
+//__device__
 //gdd_real gdd_real::debug_rand(void) {
 //
 //	if (std::rand() % 2 == 0)
@@ -965,7 +1307,7 @@ gdd_real min(const gdd_real &a, const gdd_real &b) {
 
 
 /* Outputs the double-double number dd. */
-//__host__ __host__
+//
 //std::ostream &operator<<(std::ostream &os, const gdd_real &dd) {
 //	bool showpos = (os.flags() & std::ios_base::showpos) != 0;
 //	bool uppercase = (os.flags() & std::ios_base::uppercase) != 0;
@@ -973,12 +1315,12 @@ gdd_real min(const gdd_real &a, const gdd_real &b) {
 //		showpos, uppercase, os.fill());
 //}
 
-__host__ __host__
+
 void gdd_real::error(const char *msg) {
 	if (msg) { std::cerr << "ERROR " << msg <<std::endl; }
 }
 
-__host__ __host__
+
 void round_string_dd(char *s, int precision, int *offset){
 /*
 	Input string must be all digits or errors will occur.
@@ -1312,7 +1654,7 @@ void append_expn(std::string &str, int expn) {
 
 
 // return double-double = double + double
-__device__ __host__
+__device__
 gdd_real dd_add(double a, double b) {
 	double s, e;
 	s = two_sum(a, b, e);
@@ -1320,7 +1662,7 @@ gdd_real dd_add(double a, double b) {
 }
 
 // return double-double = double - double
-__device__ __host__
+__device__
 gdd_real dd_sub(double a, double b) {
 	double s, e;
 	s = two_diff(a, b, e);
@@ -1328,7 +1670,7 @@ gdd_real dd_sub(double a, double b) {
 }
 
 // return double-double = double * double
-__device__ __host__
+__device__
 gdd_real dd_mul(double a, double b) {
 	double p, e;
 	p = two_prod(a, b, e);
@@ -1336,7 +1678,7 @@ gdd_real dd_mul(double a, double b) {
 }
 
 // return double-double = double / double
-__device__ __host__
+__device__
 gdd_real dd_div(double a, double b) {
 	double q1, q2;
 	double p1, p2;
@@ -1358,7 +1700,7 @@ gdd_real dd_div(double a, double b) {
 }
 
 // return double-double = sqr(double)
-__device__ __host__
+__device__
 gdd_real dd_sqr(double a) {
 	double p1, p2;
 	p1 = two_sqr(a, p2);

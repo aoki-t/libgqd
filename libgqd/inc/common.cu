@@ -3,14 +3,16 @@
 
 #include <stdio.h>
 //#include <stdlib.h>
-
+#include <limits.h>
+//#include <float.h>
 
 //#include "gqd_type.h"		//type definitions for gdd_real and gqd_real
 #include "cuda_header.h"
 #include "gdd_real.h"
+#include "gqd_real.h"
 //#include "inline.cu"		//basic functions used by both gdd_real and gqd_real
 
-#include "gqd_real.h"
+//#include "gqd_real.h"
 //#define SLOPPY_ADD 1
 //#define SLOPPY_MUL 1
 //#define SLOPPY_DIV 1
@@ -52,7 +54,7 @@ void GDDStart(int device) {
 }
 
 void GDDEnd() {
-	printf("GQD turns off...");
+	printf("GDD turns off...");
 	cudaDeviceReset();
 	printf("\tdone.\n");
 }

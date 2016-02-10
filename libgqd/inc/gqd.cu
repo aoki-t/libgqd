@@ -9,6 +9,8 @@
 #include "cuda_header.h"
 
 #include "gdd_real.h"
+#include "gqd_real.h"
+
 //#include "inline.cu"		//basic functions used by both gdd_real and gqd_real
 
 /* gdd_library */
@@ -20,7 +22,6 @@
 
 
 /* gqd_libraray */
-#include "gqd_real.h"
 #include "gqd_basic.cu"
 #include "gqd_sqrt.cu"
 #include "gqd_exp.cu"
