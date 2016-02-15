@@ -25,8 +25,7 @@ double quick_two_sum( double a, double b, double &err ) {
 	//	a = b;
 	//	b = t;
 	//}
-
-	assert(fabs(a) >= fabs(b));
+	//assert(fabs(a) >= fabs(b));
 
 	//if(b == 0.0) {
 	//	err = 0.0;
@@ -59,18 +58,13 @@ double two_sum( double a, double b, double &err ) {
 // Computes fl( a - b ) and err( a - b ), assumes |a| >= |b|
 __forceinline__ __device__
 double quick_two_diff( double a, double b, double &err ) {
-#ifdef _DEBUG
-	if (!(fabs(a) >= fabs(b))) {
-		printf("Not (fabs(a) >= fabs(b)) [% e, % e] in quick_two_diff(a, b, e)\n", a, b);
-	}
-#endif
 
-	if (!(fabs(a) >= fabs(b))) {
-		double t = a;
-		a = b;
-		b = t;
-	}
-	assert(fabs(a) >= fabs(b));
+	//if (!(fabs(a) >= fabs(b))) {
+	//	double t = a;
+	//	a = b;
+	//	b = t;
+	//}
+	//assert(fabs(a) >= fabs(b));
 
 	//if (a == b) {
 	//	err = 0.0;
@@ -86,10 +80,11 @@ double quick_two_diff( double a, double b, double &err ) {
 // Computes fl( a - b ) and err( a - b )
 __forceinline__ __device__
 double two_diff( double a, double b, double &err ) {
-	if(a == b) {
-		err = 0.0;
-		return 0.0;
-	}
+
+	//if(a == b) {
+	//	err = 0.0;
+	//	return 0.0;
+	//}
 
 	double s = a - b;
 	double bb = s - a;
@@ -116,6 +111,7 @@ void split(double a, double &hi, double &lo) {
 		hi = temp - (temp - a);
 		lo = a - hi;
 	}
+
 }
 #endif
 
@@ -175,7 +171,9 @@ bool is_positive(double a) {
 	const unsigned __int64 cons = 0x8000000000000000ULL;
 	trans t;
 	t.asDouble = a;
-	bool result = !((t.asInt64 & cons) == cons);
+
+	if (t.asInt64 == 0x7ff8000000000000ULL) return false;
+	bool result = ((t.asInt64 & cons) == 0);
 	return result;
 }
 
@@ -185,8 +183,9 @@ bool is_negative(double a) {
 	const unsigned __int64 cons = 0x8000000000000000ULL;
 	trans t;
 	t.asDouble = a;
-	bool result = ((t.asInt64 & cons) == cons);
 
+	if (t.asInt64 == 0xfff8000000000000ULL) return false;
+	bool result = ((t.asInt64 & cons) == cons);
 	return result;
 }
 
