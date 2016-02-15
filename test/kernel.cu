@@ -1,62 +1,30 @@
-//#include <cuda.h>
-//#include "cuda_runtime.h"
-//#include "device_launch_parameters.h"
-
-////#include "cuda_device_runtime_api.h"
-////#include "device_double_functions.h"
-////#include "device_functions.h"
-
-//#pragma comment(lib,"D:\\libgqd_class2\\bin\\x64_Release\\libgqd.lib")
-#include <float.h>
+ï»¿#include <float.h>
 #include <stdio.h>
 #include <iostream>
 //#include <math.h>
 
-//#include <immintrin.h>
-//#include <amp_math.h>
-
-//#include <gqd_type.h>
-//#include <gdd_basic.h>
-//#include <gqd_basic.h>
-//#include <gqd_function.h>
-
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
 
 #include "../libgqd/inc/cuda_header.h"
-#include "../libgqd/inc/gqd_type.h"
 #include "../libgqd/inc/common.cu"
 #include "../libgqd/inc/gdd_real.h"
+#include "../libgqd/inc/gqd_type.h"
 #include "../libgqd/inc/gqd.cu"
-#include "../libgqd/inc/gdd_log.cu"
-#include "../libgqd/inc/gdd_exp.cu"
-#include "../libgqd/inc/gdd_basic.cu"
-#include "../libgqd/inc/gdd_sincos.cu"
-//#include "../libgqd/inc/gqd_basic.h"
-//#include "../libgqd/inc/gqd_function.h"
 
-//#include "../libgqd/libgqd/inc/gdd_common.cu"
-//#include "../libgqd/libgqd/inc/gqd_common.cu"
+#include "kernel.h"
+#include "Arithmetic.cu"
 
-//#ifdef __cplusplus
-//}
-//#endif
-
-/*
-ƒŠƒ“ƒNƒGƒ‰[
-operator+(double2 const&, double2 const&)
-operator*(double2 const&, double2 const&)
-operator-(double2 const&, double2 const&)
-operator/(double2 const&, double2 const&)
-
-*/
-
+//#include "Memory.cu"
 //cudaError_t addWithCuda(gdd_real c[], const gdd_real a[], const gdd_real b[], unsigned int size);
 
-cudaError_t addWithCuda(gdd_real *c, const gdd_real *a, const gdd_real *b, unsigned int size);
-cudaError_t addWithCudaq(gqd_real *c, const gqd_real *a, const gqd_real *b, unsigned int size);
-cudaError_t IEEE_check();
+//// For translate
+//static union trans {
+//	__int64 asInt64;
+//	double  asDouble;
+//};
+
+//cudaError_t addWithCuda(gdd_real *c, const gdd_real *a, const gdd_real *b, unsigned int size);
+//cudaError_t addWithCudaq(gqd_real *c, const gqd_real *a, const gqd_real *b, unsigned int size);
+//cudaError_t IEEE_check();
 
 __global__ void addKernel(gdd_real c[],  gdd_real a[],  gdd_real b[])
 {
@@ -82,36 +50,137 @@ __global__ void addKernel(gdd_real c[],  gdd_real a[],  gdd_real b[])
 	gdd_real xxx = sin(a[i]);
 	c[i] = xxx;
 
-	printf("[%d, %d]:\t\tValue is:%llf\n", \
-		blockIdx.y*gridDim.x + blockIdx.x, \
-		threadIdx.z*blockDim.x*blockDim.y + threadIdx.y*blockDim.x + threadIdx.x, \
-		c[i].dd.x);
+	//printf("[%d, %d]:\t\tValue is:%llf\n", \
+	//	blockIdx.y*gridDim.x + blockIdx.x, \
+	//	threadIdx.z*blockDim.x*blockDim.y + threadIdx.y*blockDim.x + threadIdx.x, \
+	//	c[i].dd.x);
 
-	gdd_real ze = gdd_real(CUDART_NEG_ZERO, CUDART_NEG_ZERO);
+	gdd_real ze = gdd_real(0.0, 0.0);
+	gdd_real neg_ze = gdd_real(CUDART_NEG_ZERO, CUDART_NEG_ZERO);
 	gdd_real na = gdd_real(CUDART_NAN, CUDART_NAN);
+	gdd_real ia = gdd_real(CUDART_INF, CUDART_INF);
+	trans t;
+	t.asInt64 = 0x0000000000000003ULL;	//subnormal
+	trans t4, t5;
+	t4.asDouble = CUDART_INF;	//inf
+	t5.asDouble = CUDART_NAN;	//nan
+
 	bool ip = is_positive(ze);
 	bool in = is_negative(ze);
 	bool iz = is_zero(ze);
-	bool iq = isnan(na);
+	bool ip2 = is_positive(neg_ze);
+	bool in2 = is_negative(neg_ze);
+	bool iz2 = is_zero(neg_ze);
+
+	bool io = is_one(negative(gdd_real(-1.0)));
+	bool iq = isnan(-na);
+	bool ipi = isinf(ia);
+	bool ini = isinf(-ia);
+	bool ipf = isfinite(ia);
+	bool inf = isfinite(-ia);
+	bool isn = isfinite(t.asDouble);	// subnormal
+	bool isn2 = isfinite(-t.asDouble);	// subnormal
+
+
+	gqd_real infini = gqd_real(t4.asDouble);
+	printf("gqd_real( infinity)        is:% f\n", infini[0]);
+	gqd_real n_infini = gqd_real(-t4.asDouble);
+	printf("gqd_real(-infinity)        is:% f\n", n_infini[0]);
+
+	gqd_real q_nan = gqd_real(t5.asDouble);
+	printf("gqd_real( q_nan)           is:% f\n", q_nan[0]);
+	gqd_real n_q_nan = gqd_real(-t5.asDouble);
+	printf("gqd_real(-q_nan)           is:% f\n", n_q_nan[0]);
+
+	gqd_real subn = gqd_real(t.asDouble);
+	printf("gqd_real( subnormal)       is:% f\n", subn[0]);
+	gqd_real n_subn = gqd_real(-t.asDouble);
+	printf("gqd_real(-subnormal)       is:% f\n", n_subn[0]);
+
+
 
 	gdd_real bb(0.5), cc;
-	printf("is_positive is:%d\n", ip);
-	printf("is_negative is:%d\n", in);
-	printf("is_zero     is:%d\n", iz);
-	printf("is_nan      is:%d\n", iq);
+	printf("is_positive(zero)        is:%d\n", ip);
+	printf("is_negative(zero)        is:%d\n", in);
+	printf("is_zero(zero)            is:%d\n", iz);
+	printf("is_positive(neg_zero)    is:%d\n", ip2);
+	printf("is_negative(neg_zero)    is:%d\n", in2);
+	printf("is_zero(neg_zero)        is:%d\n", iz2);
 
-	cc = npwr(bb, 2);
-	printf("0.5^2 = %f\n", cc.dd.x);
-	cc = npwr(bb, 1);
-	printf("0.5^1 = %f\n", cc.dd.x);
+	printf("is_one(-one)    is:%d\n", io);
+	printf("is_nan          is:%d\n", iq);
+	printf("is_inf(pinf)	is:%d\n", ipi);
+	printf("is_inf(ninf)	is:%d\n", ini);
+	printf("is_finite(pinf)	is:%d\n", ipf);
+	printf("is_finite(ninf)	is:%d\n", inf);
+	printf("is_finite( subnorm)is:%d\n", isn);
+	printf("is_finite(-subnorm)is:%d\n", isn2);
 
-	cc = npwr(bb, -1);
-	printf("0.5^-1 = %f\n", cc.dd.x);
-	cc = npwr(bb, -2);
-	printf("0.5^-2 = %f\n", cc.dd.x);
 
-	cc = pow(bb, bb);
-	printf("0.5^0.5 = %f, %f\n", cc.dd.x, cc.dd.y);
+	gqd_real q_none = gqd_real(-1.0);
+	printf("-one	  is:%08llx %08llx %08llx %08llx \n", q_none[0], q_none[1], q_none[2], q_none[3]);
+	printf("-one	  is:%0llf %0llf %0llf %0llf \n", q_none[0], q_none[1], q_none[2], q_none[3]);
+
+	q_none = negative(q_none);
+	printf("neg(-one) is:%08llx %08llx %08llx %08llx \n", q_none[0], q_none[1], q_none[2], q_none[3]);
+	printf("neg(-one) is:%0llf %0llf %0llf %0llf \n", q_none[0], q_none[1], q_none[2], q_none[3]);
+	
+	io = is_one(q_none);
+	printf("is_one(neg(-one))	is:%d\n", io);
+
+	if (0.0 == CUDART_NEG_ZERO) {
+		printf("0.0 == CUDART_NEG_ZERO	is: True\n");
+	} else {
+		printf("0.0 == CUDART_NEG_ZERO	is: False\n");
+	}
+	if (0.0 > CUDART_NEG_ZERO) {
+		printf("0.0 > CUDART_NEG_ZERO	is: True\n");
+	} else {
+		printf("0.0 > CUDART_NEG_ZERO	is: False\n");
+	}
+
+	printf("-----------------------------------------------------------------\n");
+	trans t1, t2;
+	unsigned __int64 list[][2] = {
+		{ 0x3ff0000000000001ULL, 0x3ff0000000000003ULL },	//  |a| < |b|
+		{ 0x3ff0000000000001ULL, 0x0030000000000003ULL },	//	|a| > |b|
+		{ 0x3ff0000000000001ULL, 0xbff0000000000001ULL },	//	|a| = |-a|
+		{ 0x3ff0000000000001ULL, 0xbff0000000000002ULL },	//	|a| < |b|
+	};
+	int max = sizeof(list) / sizeof(list[0]);
+	for (int i = 0; i < max; i++) {
+		t1.asInt64 = list[i][0];
+		t2.asInt64 = list[i][1];
+		double e1, e2, e3;
+		
+		printf("in     [% e, % e] [%016llx, %016llx]\n", t1.asDouble, t2.asDouble, t1.asDouble, t2.asDouble);
+		double s1 = quick_two_sum(t1.asDouble, t2.asDouble, e1);
+		printf("qt-out [% e, % e] [%016llx, %016llx]\n", s1, e1, s1, e1);
+		double s2 = quick_two_sum(t2.asDouble, t1.asDouble, e2);
+		printf("qt-out [% e, % e] [%016llx, %016llx]\n", s2, e2, s2, e2);
+
+		double s3 = two_sum(t2.asDouble, t1.asDouble, e3);
+		printf(" t-out [% e, % e] [%016llx, %016llx]\n", s3, e3, s3, e3);
+
+		if (s1 == s2 && e1 == e2) {
+			printf("same\n\n");
+		} else {
+			printf("different \n\n");
+		}
+	}
+	printf("-----------------------------------------------------------------\n");
+	//cc = npwr(bb, 2);
+	//printf("0.5^2 = %f\n", cc.dd.x);
+	//cc = npwr(bb, 1);
+	//printf("0.5^1 = %f\n", cc.dd.x);
+
+	//cc = npwr(bb, -1);
+	//printf("0.5^-1 = %f\n", cc.dd.x);
+	//cc = npwr(bb, -2);
+	//printf("0.5^-2 = %f\n", cc.dd.x);
+
+	//cc = pow(bb, bb);
+	//printf("0.5^0.5 = %f, %f\n", cc.dd.x, cc.dd.y);
 
 
 }
@@ -125,22 +194,22 @@ __global__ void addKernelq(gqd_real *c, const gqd_real *a, const gqd_real *b)
 
 }
 
-__global__ void NanOperation(double *c)
+__global__ void NanOperation(double *c, int N)
 {
+	extern __shared__ double res[];
 	const double inf = CUDART_INF;
 	const double cunan = CUDART_NAN;
 	const double nzero = CUDART_NEG_ZERO;
 	const double zero = 0.0;
 	const double one = 1.0;
-	const int N = 40;
-	__shared__ double res[N];
-
+	//const int N = 40;
+	
 
 	//int i = threadIdx.x;
 
 	res[0] = pow(zero, zero);	// 0^0
 	res[1] = pow(one, zero);	// 1^0
-	res[2] = pow(cunan, zero);	// NaN^0	(2008‚Å‚Í1‚ð•Ô‚·)
+	res[2] = pow(cunan, zero);	// NaN^0	(2008ã§ã¯1ã‚’è¿”ã™)
 	res[3] = pow(inf, zero);	// Inf^0
 
 	res[4] = pow(zero, one);	// 0^1
@@ -155,7 +224,7 @@ __global__ void NanOperation(double *c)
 	res[12] = pow(inf, inf);	// Inf^inf
 
 	res[13] = pow(zero, cunan);	// 0^NaN
-	res[14] = pow(one, cunan);	// 1^NaN	(2008‚Å‚Í1‚ð•Ô‚·)
+	res[14] = pow(one, cunan);	// 1^NaN	(2008ã§ã¯1ã‚’è¿”ã™)
 	res[15] = pow(inf, cunan);	// inf^NaN
 	res[16] = pow(cunan, cunan);	// NaN^NaN
 
@@ -163,7 +232,7 @@ __global__ void NanOperation(double *c)
 	res[18] = exp(inf);		// exp(inf)
 	res[19] = exp(-inf);	// exp(-inf)
 
-	// logŠÖ”Žd—lŠm”F
+	// logé–¢æ•°ä»•æ§˜ç¢ºèª
 	res[20] = log(zero);
 	res[21] = log(nzero);
 	res[22] = log(one);
@@ -172,7 +241,7 @@ __global__ void NanOperation(double *c)
 	res[25] = log(-inf);
 	res[26] = log(cunan);
 
-	// sqrtŠÖ”Žd—lŠm”F
+	// sqrté–¢æ•°ä»•æ§˜ç¢ºèª
 	res[27] = sqrt(zero);
 	res[28] = sqrt(nzero);
 	res[29] = sqrt( inf);
@@ -180,22 +249,81 @@ __global__ void NanOperation(double *c)
 	res[31] = sqrt(-inf);
 	res[32] = sqrt(cunan);
 
-	for (int i = 0; i < N; ++i){
+	// comparition
+	res[33] = (cunan == cunan);
+	res[34] = (cunan != cunan);
+	res[35] = (cunan > cunan);
+	res[36] = (cunan >= cunan);
+	res[37] = (cunan < cunan);
+	res[38] = (cunan <= cunan);
+
+	res[39] = (cunan == inf);
+	res[40] = (cunan != inf);
+	res[41] = (cunan >  inf);
+	res[42] = (cunan >= inf);
+	res[43] = (cunan <  inf);
+	res[44] = (cunan <= inf);
+
+	res[45] = (cunan == -inf);
+	res[46] = (cunan != -inf);
+	res[47] = (cunan >  -inf);
+	res[48] = (cunan >= -inf);
+	res[49] = (cunan <  -inf);
+	res[50] = (cunan <= -inf);
+
+	res[51] = (cunan == 1.0);
+	res[52] = (cunan != 1.0);
+	res[53] = (cunan >  1.0);
+	res[54] = (cunan >= 1.0);
+	res[55] = (cunan <  1.0);
+	res[56] = (cunan <= 1.0);
+
+	// nan ops
+	res[57] = (cunan / 1.0);
+	res[58] = (1.0 / cunan);
+	res[59] = (0.0 / 0.0  );
+	res[60] = (0.0 / nzero);
+	res[61] = (nzero / 0.0);
+	res[62] = (nzero/nzero);
+	res[63] = ( inf /  inf);
+	res[64] = ( inf / -inf);
+	res[65] = (-inf /  inf);
+	res[66] = (-inf / -inf);
+	res[67] = ( 0.0 /  1.0);
+	res[68] = ( 0.0 / -1.0);
+	res[69] = ( 0.0 /  inf);
+	res[70] = ( 0.0 / -inf);
+	res[71] = (nzero/  1.0);
+	res[72] = (nzero/ -1.0);
+	res[73] = (nzero/  inf);
+	res[74] = (nzero/ -inf);
+
+	res[75] = ( 1.0 /  0.0);
+	res[76] = (-1.0 /  0.0);
+	res[77] = ( inf /  0.0);
+	res[78] = (-inf /  0.0);
+	res[79] = ( 1.0 /nzero);
+	res[80] = (-1.0 /nzero);
+	res[81] = ( inf /nzero);
+	res[82] = (-inf /nzero);
+
+
+	for (int i = 0; i < N; ++i) {
 		c[i] = res[i];
 	}
 }
 
-
-int main()
+/*
+int main2()
 {
 	GDDStart(0);
-
+	GQDStart(0);
 	std::cout << "cuda GQD sample" << std::endl;
 
     const int arraySize = 5;
 	const gdd_real a[arraySize] = { gdd_real(1.0, 0.0), gdd_real(2.0, 0.0), gdd_real(3.0, 0.0), gdd_real(4.0, 0.0), gdd_real(5.0, 0.0) };
 	const gdd_real b[arraySize] = { gdd_real(10.0, 0.0), gdd_real(20.0, 0.0), gdd_real(30.0, 0.0), gdd_real(40.0, 0.0), gdd_real(50.0, 0.0) };
-	gdd_real c[arraySize] = { gdd_real(0.0, 0.0) ,0, 0, 0, 0,};
+	gdd_real c[arraySize] = { gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), };
 
 	//const gqd_real q_a[arraySize] = { make_qd(1), make_qd(2), make_qd(3), make_qd(4), make_qd(5) };
 	//const gqd_real q_b[arraySize] = { make_qd(10), make_qd(20), make_qd(30), make_qd(40), make_qd(50) };
@@ -217,21 +345,21 @@ int main()
 		__int64 L64;
 	};
 	double inn = std::numeric_limits<double>::infinity();
-	std::cout << " inf_d = ";
+	std::cout << " inf_host double = ";
 	printf("%0I64x\n", inn);
 
 
 	double nn = std::numeric_limits<double>::quiet_NaN();	//0x7ff8000 00000000
-	std::cout << "qnan_d = ";
+	std::cout << "qnan_host double = ";
 	printf("%0I64x\n", nn);
 
 	double ss = std::numeric_limits<double>::signaling_NaN();	//0x7ff0000 00000001
-	std::cout << "snan_d = ";
+	std::cout << "snan_host double = ";
 	printf("%0I64x\n\n", ss);
 
 	dd inf_d;
 	inf_d.d = std::numeric_limits<double>::max() * 10.0;
-	std::cout << " inf_d = ";
+	std::cout << " inf_host double = ";
 	printf("%0I64x\n", inf_d);
 
 	dd qnan_d;
@@ -284,17 +412,18 @@ int main()
 	std::cout << "-----------------------------" << std::endl;
 
 	for (int i = 0; i < arraySize ; ++i){
-		std::cout << c[i].dd.x << ", ";
-		std::cout << c[i].dd.y;
+		//std::cout << c[i].dd.x << ", ";
+		//std::cout << c[i].dd.y;
 		std::cout << std::endl;
 	}
 
 	
-	cudaStatus = IEEE_check();
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "IEEE_check failed!");
-		return 1;
-	}
+
+	//cudaStatus = MemoryBandwidthCheck();
+	//if (cudaStatus != cudaSuccess) {
+	//	fprintf(stderr, " MemoryBandwidthCheck() failed!");
+	//	return 1;
+	//}
 
 	// gdd_real^N check
 	//gdd_real aa(2.0),bb(0.5), cc;
@@ -334,19 +463,26 @@ int main()
     }
 
 	GDDEnd();
-
+	GQDEnd();
     return 0;
 }
-
+*/
 
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(gdd_real *c, const gdd_real *a, const gdd_real *b, unsigned int size)
+//cudaError_t addWithCuda(gdd_real *c, const gdd_real *a, const gdd_real *b, unsigned int size)
+cudaError_t k_addWithCuda()
 {
 	gdd_real *dev_a = 0;
 	gdd_real *dev_b = 0;
 	gdd_real *dev_c = 0;
     cudaError_t cudaStatus;
+	
+	const int arraySize = 5;
+	const gdd_real a[arraySize] = { gdd_real(1.0, 0.0), gdd_real(2.0, 0.0), gdd_real(3.0, 0.0), gdd_real(4.0, 0.0), gdd_real(5.0, 0.0) };
+	const gdd_real b[arraySize] = { gdd_real(10.0, 0.0), gdd_real(20.0, 0.0), gdd_real(30.0, 0.0), gdd_real(40.0, 0.0), gdd_real(50.0, 0.0) };
+	gdd_real c[arraySize] = { gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), };
 
+	int size = arraySize;
     // Choose which GPU to run on, change this on a multi-GPU system.
     cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
@@ -411,6 +547,25 @@ cudaError_t addWithCuda(gdd_real *c, const gdd_real *a, const gdd_real *b, unsig
         goto Error;
     }
 
+	double *f = (double*)c;
+
+	for (int i = 0; i < arraySize / 2; ++i) {
+		std::cout << *f << ", ";
+		f++;
+		std::cout << *f;
+		f++;
+		std::cout << std::endl;
+	}
+	std::cout << "-----------------------------" << std::endl;
+
+	for (int i = 0; i < arraySize; ++i) {
+		//std::cout << c[i].dd.x << ", ";
+		//std::cout << c[i].dd.y;
+		std::cout << std::endl;
+	}
+
+	cudaStatus = cudaSuccess;
+
 Error:
     cudaFree(dev_c);
     cudaFree(dev_a);
@@ -419,10 +574,13 @@ Error:
     return cudaStatus;
 }
 
+
+
 union uni_cuda{
 	double d;
 	__int64 L64;
 };
+
 std::string checkCudaValue(uni_cuda a){
 #define CUDA_INF		(0x7ff0000000000000ULL)
 #define CUDA_NAN		(0xfff8000000000000ULL)
@@ -450,18 +608,30 @@ std::string checkCudaValue(uni_cuda a){
 			return std::string(" (+CUDART_NAN)");
 		}
 	}
+	if (a.L64 == 0x3ff0000000000000) { return " (1.0)"; }
 	if (a.L64 == cuda_pinf.L64){ return std::string(" (CUDART_Pinf)"); }
 	if (a.L64 == cuda_ninf.L64){ return std::string(" (CUDART_Ninf)"); }
 	if (a.L64 == cuda_nzero.L64){ return std::string(" (CUDART_NZERO)"); }
 	return std::string("");
 }
 
-cudaError_t addWithCudaq(gqd_real *c, const gqd_real *a, const gqd_real *b, unsigned int size)
+
+
+//cudaError_t addWithCudaq(gqd_real *c, const gqd_real *a, const gqd_real *b, unsigned int size)
+cudaError_t k_addWithCudaq()
 {
 	gqd_real *dev_a = 0;
 	gqd_real *dev_b = 0;
 	gqd_real *dev_c = 0;
 	cudaError_t cudaStatus;
+	
+	const int arraySize = 5;
+	const gdd_real a[arraySize] = { gdd_real(1.0, 0.0), gdd_real(2.0, 0.0), gdd_real(3.0, 0.0), gdd_real(4.0, 0.0), gdd_real(5.0, 0.0) };
+	const gdd_real b[arraySize] = { gdd_real(10.0, 0.0), gdd_real(20.0, 0.0), gdd_real(30.0, 0.0), gdd_real(40.0, 0.0), gdd_real(50.0, 0.0) };
+	gdd_real c[arraySize] = { gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), gdd_real(0.0, 0.0), };
+
+	int size = arraySize;
+
 
 	// Choose which GPU to run on, change this on a multi-GPU system.
 	cudaStatus = cudaSetDevice(0);
@@ -527,6 +697,8 @@ cudaError_t addWithCudaq(gqd_real *c, const gqd_real *a, const gqd_real *b, unsi
 		goto Error;
 	}
 
+	cudaStatus = cudaSuccess;
+
 Error:
 	cudaFree(dev_c);
 	cudaFree(dev_a);
@@ -536,12 +708,12 @@ Error:
 }
 
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t IEEE_check()
+cudaError_t k_IEEE_check()
 {
-	const int n_nan_elements = 40;
-	uni_cuda nan_res[n_nan_elements];
+	const int elements = 100;
+	uni_cuda nan_res[elements];
 	double *dev_nan_res;
-	int dev_mem_size = sizeof(double)*n_nan_elements;
+	int dev_mem_size = sizeof(double)*elements;
 
 	cudaError_t cudaStatus;
 
@@ -553,16 +725,12 @@ cudaError_t IEEE_check()
 	}
 
 	// Allocate GPU buffers for three vectors (two input, one output)    .
-	cudaStatus = cudaMalloc((void**)&dev_nan_res, dev_mem_size);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMalloc failed!");
-		goto Error;
-	}
+	checkCudaErrors(cudaMalloc((void**)&dev_nan_res, dev_mem_size));
 
-	cudaMemset(dev_nan_res, '\0', dev_mem_size);
+	checkCudaErrors(cudaMemset(dev_nan_res, '\0', dev_mem_size));
 
 	// Launch a kernel on the GPU with one thread for each element.
-	NanOperation<<<1, 1 >>>(dev_nan_res);
+	NanOperation<<<1, 1, dev_mem_size >>>(dev_nan_res, elements);
 
 	// Check for any errors launching the kernel
 	cudaStatus = cudaGetLastError();
@@ -573,23 +741,16 @@ cudaError_t IEEE_check()
 
 	// cudaDeviceSynchronize waits for the kernel to finish, and returns
 	// any errors encountered during the launch.
-	cudaStatus = cudaDeviceSynchronize();
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
-		goto Error;
-	}
+	checkCudaErrors(cudaDeviceSynchronize());
 
 	// Copy output vector from GPU buffer to host memory.
-	cudaStatus = cudaMemcpy(nan_res, dev_nan_res, dev_mem_size, cudaMemcpyDeviceToHost);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMemcpy failed!");
-		goto Error;
-	}
-
+	checkCudaErrors(cudaMemcpy(nan_res, dev_nan_res, dev_mem_size, cudaMemcpyDeviceToHost));
+	
 	std::cout << std::hex;
+	std::cout << "|expres|expect|result  ----------------------------------| " << std::endl;
 	std::cout << "0^0   = [ 1.0] " << nan_res[0].d << checkCudaValue(nan_res[0]) << std::endl;
 	std::cout << "1^0   = [ 1.0] " << nan_res[1].d << checkCudaValue(nan_res[1]) << std::endl;
-	std::cout << "NaN^0 = [ 1.0] " << nan_res[2].d << checkCudaValue(nan_res[2]) << std::endl;
+	std::cout << "NaN^0 = [ 1.0] " << nan_res[2].d << checkCudaValue(nan_res[2]) << " (but should be NaN)" << std::endl;
 	std::cout << "Inf^0 = [ 1.0] " << nan_res[3].d << checkCudaValue(nan_res[3]) << std::endl;
 	std::cout << std::endl;
 	std::cout << "0^1   = [ 0.0] " << nan_res[4].d << checkCudaValue(nan_res[4]) << std::endl;
@@ -635,9 +796,71 @@ cudaError_t IEEE_check()
 	std::cout << "sqrt( NaN) = [ NaN] " << nan_res[32].L64 << checkCudaValue(nan_res[32]) << std::endl;
 	std::cout << std::endl;
 
+	std::cout << "Nan comparition ---------------" << std::endl;
+	std::cout << "nan == nan = [   0] " << nan_res[33].L64 << checkCudaValue(nan_res[33]) << std::endl;
+	std::cout << "nan != nan = [   1] " << nan_res[34].L64 << checkCudaValue(nan_res[34]) << std::endl;
+	std::cout << "nan >  nan = [   0] " << nan_res[35].L64 << checkCudaValue(nan_res[35]) << std::endl;
+	std::cout << "nan >= nan = [   0] " << nan_res[36].L64 << checkCudaValue(nan_res[36]) << std::endl;
+	std::cout << "nan <  nan = [   0] " << nan_res[37].L64 << checkCudaValue(nan_res[37]) << std::endl;
+	std::cout << "nan <= nan = [   0] " << nan_res[38].L64 << checkCudaValue(nan_res[38]) << std::endl;
+	std::cout << std::endl;
 
-	cudaFree(dev_nan_res);
-	return cudaStatus;
+	std::cout << "nan == inf = [   0] " << nan_res[39].L64 << checkCudaValue(nan_res[39]) << std::endl;
+	std::cout << "nan != inf = [   1] " << nan_res[40].L64 << checkCudaValue(nan_res[40]) << std::endl;
+	std::cout << "nan >  inf = [   0] " << nan_res[41].L64 << checkCudaValue(nan_res[41]) << std::endl;
+	std::cout << "nan >= inf = [   0] " << nan_res[42].L64 << checkCudaValue(nan_res[42]) << std::endl;
+	std::cout << "nan <  inf = [   0] " << nan_res[43].L64 << checkCudaValue(nan_res[43]) << std::endl;
+	std::cout << "nan <= inf = [   0] " << nan_res[44].L64 << checkCudaValue(nan_res[44]) << std::endl;
+	std::cout << std::endl;
+
+	std::cout << "nan == -inf = [   0] " << nan_res[45].L64 << checkCudaValue(nan_res[45]) << std::endl;
+	std::cout << "nan != -inf = [   1] " << nan_res[46].L64 << checkCudaValue(nan_res[46]) << std::endl;
+	std::cout << "nan >  -inf = [   0] " << nan_res[47].L64 << checkCudaValue(nan_res[47]) << std::endl;
+	std::cout << "nan >= -inf = [   0] " << nan_res[48].L64 << checkCudaValue(nan_res[48]) << std::endl;
+	std::cout << "nan <  -inf = [   0] " << nan_res[49].L64 << checkCudaValue(nan_res[49]) << std::endl;
+	std::cout << "nan <= -inf = [   0] " << nan_res[50].L64 << checkCudaValue(nan_res[50]) << std::endl;
+	std::cout << std::endl;
+
+	std::cout << "nan == 1.0 = [   0] " << nan_res[51].L64 << checkCudaValue(nan_res[51]) << std::endl;
+	std::cout << "nan != 1.0 = [   1] " << nan_res[52].L64 << checkCudaValue(nan_res[52]) << std::endl;
+	std::cout << "nan >  1.0 = [   0] " << nan_res[53].L64 << checkCudaValue(nan_res[53]) << std::endl;
+	std::cout << "nan >= 1.0 = [   0] " << nan_res[54].L64 << checkCudaValue(nan_res[54]) << std::endl;
+	std::cout << "nan <  1.0 = [   0] " << nan_res[55].L64 << checkCudaValue(nan_res[55]) << std::endl;
+	std::cout << "nan <= 1.0 = [   0] " << nan_res[56].L64 << checkCudaValue(nan_res[56]) << std::endl;
+	std::cout << std::endl;
+
+	std::cout << "Nan ops ---------------" << std::endl;
+	std::cout << "cunan / 1.0 = [ NaN] " << nan_res[57].L64 << checkCudaValue(nan_res[57]) << std::endl;
+	std::cout << "1.0 / cunan = [ NaN] " << nan_res[58].L64 << checkCudaValue(nan_res[58]) << std::endl;
+	std::cout << "0.0 / 0.0   = [ NaN] " << nan_res[59].L64 << checkCudaValue(nan_res[59]) << std::endl;
+	std::cout << "0.0 / nzero = [?NaN] " << nan_res[60].L64 << checkCudaValue(nan_res[60]) << std::endl;
+	std::cout << "nzero / 0.0 = [?NaN] " << nan_res[61].L64 << checkCudaValue(nan_res[61]) << std::endl;
+	std::cout << "nzero/nzero = [ NaN] " << nan_res[62].L64 << checkCudaValue(nan_res[62]) << std::endl;
+	std::cout << " inf /  inf = [ NaN] " << nan_res[63].L64 << checkCudaValue(nan_res[63]) << std::endl;
+	std::cout << " inf / -inf = [ NaN] " << nan_res[64].L64 << checkCudaValue(nan_res[64]) << std::endl;
+	std::cout << "-inf /  inf = [ NaN] " << nan_res[65].L64 << checkCudaValue(nan_res[65]) << std::endl;
+	std::cout << "-inf / -inf = [ NaN] " << nan_res[66].L64 << checkCudaValue(nan_res[66]) << std::endl;
+	std::cout << " 0.0 /  1.0 = [ 0.0] " << nan_res[67].L64 << checkCudaValue(nan_res[67]) << std::endl;
+	std::cout << " 0.0 / -1.0 = [-0.0] " << nan_res[68].L64 << checkCudaValue(nan_res[68]) << std::endl;
+	std::cout << " 0.0 /  inf = [ 0.0] " << nan_res[69].L64 << checkCudaValue(nan_res[69]) << std::endl;
+	std::cout << " 0.0 / -inf = [-0.0] " << nan_res[70].L64 << checkCudaValue(nan_res[70]) << std::endl;
+	std::cout << "nzero/  1.0 = [-0.0] " << nan_res[71].L64 << checkCudaValue(nan_res[71]) << std::endl;
+	std::cout << "nzero/ -1.0 = [ 0.0] " << nan_res[72].L64 << checkCudaValue(nan_res[72]) << std::endl;
+	std::cout << "nzero/  inf = [-0.0] " << nan_res[73].L64 << checkCudaValue(nan_res[73]) << std::endl;
+	std::cout << "nzero/ -inf = [ 0.0] " << nan_res[74].L64 << checkCudaValue(nan_res[74]) << std::endl;
+
+	std::cout << " 1.0 /  0.0 = [ inf] " << nan_res[75].L64 << checkCudaValue(nan_res[75]) << std::endl;
+	std::cout << "-1.0 /  0.0 = [-inf] " << nan_res[76].L64 << checkCudaValue(nan_res[76]) << std::endl;
+	std::cout << " inf /  0.0 = [ inf] " << nan_res[77].L64 << checkCudaValue(nan_res[77]) << std::endl;
+	std::cout << "-inf /  0.0 = [-inf] " << nan_res[78].L64 << checkCudaValue(nan_res[78]) << std::endl;
+	std::cout << " 1.0 /nzero = [-inf] " << nan_res[79].L64 << checkCudaValue(nan_res[79]) << std::endl;
+	std::cout << "-1.0 /nzero = [ inf] " << nan_res[80].L64 << checkCudaValue(nan_res[80]) << std::endl;
+	std::cout << " inf /nzero = [-inf] " << nan_res[81].L64 << checkCudaValue(nan_res[81]) << std::endl;
+	std::cout << "-inf /nzero = [ inf] " << nan_res[82].L64 << checkCudaValue(nan_res[82]) << std::endl;
+
+	std::cout << std::endl;
+
+	cudaStatus = cudaSuccess;
 
 Error:
 	cudaFree(dev_nan_res);
@@ -646,135 +869,67 @@ Error:
 }
 
 
-/*
+//cudaError_t addWithCuda(gdd_real *c, const gdd_real *a, const gdd_real *b, unsigned int size);
+//cudaError_t addWithCudaq(gqd_real *c, const gqd_real *a, const gqd_real *b, unsigned int size);
+//cudaError_t IEEE_check();
 
-__forceinline__ __host__ __device__
-double two_sqr_fma(double a, double &err) {
-	double p = a * a;
-	err = fma(a, a, -p);
-	return p;
-
+void addWithCudaq() {
+	k_addWithCudaq();
 }
 
-__host__
-double h_two_sqr_fma(double a, double &err) {
-	double p = a * a;
-	err = Concurrency::precise_math::fma(a, a, -p);
-	return p;
-
+void addWithCuda() {
+	k_addWithCuda();
 }
 
-
-__forceinline__ __host__ __device__
-double two_sqr_nofma(double a, double &err) {
-	double hi, lo;
-	double q = a * a;
-	split(a, hi, lo);
-	err = ((hi * hi - q) + 2.0 * hi * lo) + lo * lo;
-	return q;
-}
-
-double h_two_sqr_nofma(double a, double &err) {
-	double hi, lo;
-	double q = a * a;
-	split(a, hi, lo);
-	err = ((hi * hi - q) + 2.0 * hi * lo) + lo * lo;
-	return q;
+void IEEE_check() {
+	k_IEEE_check();
 }
 
 
-__global__
-void test_fma_diff_kernel(double *in_val, double *fma_res, double *fma_err, double *no_fma_res, double *no_fma_err){
-	int i = blockDim.x * blockIdx.x + threadIdx.x;
-
-	fma_res[i] = two_sqr_fma(in_val[i], fma_err[i]);
-	no_fma_res[i] = two_sqr_nofma(in_val[i], no_fma_err[i]);
-
+void checkInline() {
+	k_checkInline();
 }
 
-void test_fma_diff(){
-#define elements 100
-	double in[elements];
-	double fma_res[elements];
-	double fma_err[elements];
-	double no_fma_res[elements];
-	double no_fma_err[elements];
-	double host_fma_res[elements];
-	double host_fma_err[elements];
-	double host_no_fma_res[elements];
-	double host_no_fma_err[elements];
 
-	double *dev_in;
-	double *dev_fma_res;
-	double *dev_fma_err;
-	double *dev_no_fma_res;
-	double *dev_no_fma_err;
+void Initialize(int n) {
+	GDDStart(n);
+	GQDStart(n);
+}
 
-	cudaMalloc(&dev_in, sizeof(double)*elements);
-	cudaMalloc(&dev_fma_res, sizeof(double)*elements);
-	cudaMalloc(&dev_fma_err, sizeof(double)*elements);
-	cudaMalloc(&dev_no_fma_res, sizeof(double)*elements);
-	cudaMalloc(&dev_no_fma_err, sizeof(double)*elements);
-	dim3 gridsize = 1;
-	dim3 blocksize = elements;
-
-	for (int i = 0; i < elements; i++){
-		in[i] = 1.0 - (1 / std::pow(10, i));
+void Finalize(int n) {
+	int current;
+	cudaGetDevice(&current);
+	if (current != n) {
+		cudaSetDevice(n);
 	}
-
-	cudaMemcpy(&dev_in, in, sizeof(double)*elements, cudaMemcpyHostToDevice);
-	cudaMemset(&dev_fma_res, 0, sizeof(double)*elements);
-	cudaMemset(&dev_fma_err, 0, sizeof(double)*elements);
-	cudaMemset(&dev_no_fma_res, 0, sizeof(double)*elements);
-	cudaMemset(&dev_no_fma_err, 0, sizeof(double)*elements);
-
-	test_fma_diff_kernel <<<gridsize, blocksize>>>(in, fma_res, fma_err, no_fma_res, no_fma_err);
-
-	cudaMemcpy(&fma_res, dev_fma_res, sizeof(double)*elements, cudaMemcpyDeviceToHost);
-	cudaMemcpy(&fma_err, dev_fma_err, sizeof(double)*elements, cudaMemcpyDeviceToHost);
-	cudaMemcpy(&no_fma_res, dev_no_fma_res, sizeof(double)*elements, cudaMemcpyDeviceToHost);
-	cudaMemcpy(&no_fma_err, dev_no_fma_err, sizeof(double)*elements, cudaMemcpyDeviceToHost);
-	cudaDeviceSynchronize();
-
-
-	for (int i = 0; i < elements; i++){
-		host_fma_res[i] = h_two_sqr_fma(in[i], host_fma_err[i]);
-		host_no_fma_res[i] = h_two_sqr_nofma(in[i], host_no_fma_err[i]);
-
-		gdd_real h_fma, h_nofma, d_fma, d_nofma;
-		//host fma<->nofma
-		//double diff_h2h_res = host_fma_res - host_no_fma_res;
-		//double diff_h2h_err = host_fma_err - host_no_fma_err;
-
-		h_fma = gdd_real(host_fma_res[i], host_fma_err[i]);
-		h_nofma = gdd_real(host_no_fma_res[i], host_no_fma_err[i]);
-
-
-		//fma host<->dev
-		//double diff_d2h_res = dev_fma_res - host_fma_res;
-		//double diff_d2h_err = dev_fma_err - host_fma_err;
-		d_fma = gdd_real(dev_fma_res[i], dev_fma_err[i]);
-
-		//nofma host<->dev
-		//double diff_d2h_no_res = dev_no_fma_res - host_no_fma_res;
-		//double diff_d2h_no_err = dev_no_fma_err - host_no_fma_err;
-		d_nofma = gdd_real(dev_no_fma_res[i], dev_no_fma_err[i]);
-
-		if (d_fma != d_nofma){
-			std::cout << "in val            " << in[i] << std::endl;
-			std::cout << "host fma<->nofma  " << (h_fma - h_nofma) << std::endl;
-			std::cout << "  fma  dev<->host " << (d_fma - h_fma) << std::endl;
-			std::cout << "nofma  dev<->host " << (d_nofma - h_nofma) << std::endl;
-			std::cout << std::endl;
-		}
-	}
-
-	cudaFree(dev_in);
-	cudaFree(dev_fma_res);
-	cudaFree(dev_fma_err);
-	cudaFree(dev_no_fma_res);
-	cudaFree(dev_no_fma_err);
-
+	
+	GDDEnd();
+	GQDEnd();
 }
-*/
+
+
+double testdata[20] = {
+	
+	0xfff8000000000000ULL,	// qnan 
+	0x7ff8000000000000ULL,	// -qnan
+	0x7ff0000000000000ULL,	// inf
+	0xfff0000000000000ULL,	// -inf
+	0x3fefffffffffffffULL,	// max
+	0xbfefffffffffffffULL,	// -max
+	0x0010000000000000ULL,	// min_norm
+	0x8010000000000000ULL,	// -min_norm
+	0x0001111111111111ULL,	// subnormal_max
+	0x0000000000000001ULL,	// subnormal_min
+	0x8001111111111111ULL,	// -subnormal_max
+	0x8000000000000001ULL,	// -subnormal_min
+	0x4011000000000000ULL,	// 3.0
+	0x4000000000000000ULL,	// 2.0
+	0x3ff0000000000000ULL,	// 1.0
+	0x0000000000000000ULL,	// 0.0
+	0x8000000000000000ULL,	// -0.0
+	0xbff0000000000000ULL,	// -1.0
+	0xc000000000000000ULL,	// -2.0
+	0xc011000000000000ULL,	// -3.0
+
+};
 
