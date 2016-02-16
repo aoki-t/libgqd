@@ -2,9 +2,12 @@
 #ifndef _CUDA_HEADER_CU_
 #define _CUDA_HEADER_CU_
 
+#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
-//#include <sys/time.h>
+#include <mmsystem.h>
+#pragma comment(lib,"winmm.lib")
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -112,25 +115,43 @@ public:
 
 class CPUTimer : public Timer {
 private:
-//	struct timeval _start, _end;
+	LARGE_INTEGER begin, end;	// clocks
+	LARGE_INTEGER freq;			// clocks / sec
+	DWORD dwBegin, dwEnd;		// ms
+	BOOL hasQPC;
+	TIMECAPS timeCaps;
+
 public:
-
-//	CPUTimer() :
-//	_start(), _end() {
-//	}
-
-	CPUTimer(){}
+	CPUTimer(){
+		hasQPC = QueryPerformanceFrequency(&freq);
+		if (!hasQPC) {
+			timeGetDevCaps(&timeCaps, sizeof(timeCaps));
+		}
+	}
 
 	~CPUTimer() {
 	}
 
 	void go() {
-//		gettimeofday(&_start, NULL);
+		if (hasQPC) {
+			QueryPerformanceCounter(&begin);
+		} else {
+			timeBeginPeriod(timeCaps.wPeriodMin);
+			dwBegin = timeGetTime();
+		}
 	}
 
 	void stop() {
-//		gettimeofday(&_end, NULL);
-//		_t += ((_end.tv_sec - _start.tv_sec)*1000.0f + (_end.tv_usec - _start.tv_usec) / 1000.0f);
+		if (hasQPC) {
+			QueryPerformanceCounter(&end);
+			double elapsed = (double)(end.QuadPart - begin.QuadPart) / (double)freq.QuadPart;
+			_t += (float)(elapsed * 1000.0);
+			
+		} else {
+			dwEnd = timeGetTime();
+			timeEndPeriod(timeCaps.wPeriodMin);
+			_t += (float)(dwEnd - dwBegin);
+		}
 	}
 };
 
